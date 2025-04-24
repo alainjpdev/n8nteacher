@@ -38,7 +38,7 @@ export default function PropertyCarousel({ images }: { images: any[] }) {
           setActiveIndex(index);
         }}
         renderItem={({ item }) => (
-          <Image source={item} style={styles.carouselImage} />
+            <Image source={{ uri: item }} style={styles.carouselImage} />
         )}
       />
 
@@ -63,11 +63,11 @@ export default function PropertyCarousel({ images }: { images: any[] }) {
 }
 
 const styles = StyleSheet.create({
-  carouselImage: {
-    width: ITEM_WIDTH,
-    height: 220,
-    borderRadius: 8,
-  },
+    carouselImage: {
+        width: ITEM_WIDTH,
+        height: Dimensions.get('window').height * 0.33,
+        borderRadius: 8,
+      },
   dotsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',

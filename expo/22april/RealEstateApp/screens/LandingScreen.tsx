@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { View, StyleSheet, Pressable, Text } from 'react-native';
-import { Video } from 'expo-av';
+import { Video, AVPlaybackStatus, ResizeMode } from 'expo-av';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
@@ -19,11 +19,11 @@ export default function LandingScreen() {
         ref={videoRef}
         source={require('../assets/landing.mov')}
         style={styles.video}
-        resizeMode="cover"
+        resizeMode={ResizeMode.COVER}
         shouldPlay
         isLooping={false}
-        onPlaybackStatusUpdate={(status) => {
-          if (status.didJustFinish) {
+        onPlaybackStatusUpdate={(status: AVPlaybackStatus) => {
+          if ('didJustFinish' in status && status.didJustFinish) {
             goToHome();
           }
         }}

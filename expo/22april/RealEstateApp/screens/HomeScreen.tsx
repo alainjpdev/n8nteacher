@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, Pressable, StyleSheet, Dimensions } from 'react-native';
-import { listings } from '../data/listings';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, Pressable, StyleSheet, Dimensions, Platform, StatusBar } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
+import { Listing } from '../types';
+import { getProperties } from '../supabase/properties';
 import TopBar from '../components/TopBar';
 import SubMenu from '../components/SubMenu';
 import MenuModal from '../components/MenuModal';
@@ -15,19 +16,52 @@ const { width } = Dimensions.get('window');
 export default function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [menuVisible, setMenuVisible] = useState(false);
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [filterType, setFilterType] = useState<'sale' | 'rent'>('sale');
+  const [minPrice, setMinPrice] = useState<number | null>(null);
+  const [maxPrice, setMaxPrice] = useState<number | null>(null);
+
+  useEffect(() => {
+    getProperties(filterType).then((data) => {
+      if (data) {
+        const filtered = data.filter((item) => {
+            const price = Number(item.price);
+            const matchesType = filterType === 'sale' ? item.for_sale : item.for_rent;
+            const matchesMin = minPrice === null || price >= minPrice;
+            const matchesMax = maxPrice === null || price <= maxPrice;
+            return matchesType && matchesMin && matchesMax;
+          });
+        setListings(filtered);
+      }
+    });
+  }, [filterType, minPrice, maxPrice]);
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
+      <View
+        style={{
+          height: Platform.OS === 'android' ? StatusBar.currentHeight : 44,
+          backgroundColor: 'white',
+        }}
+      />
+
       <TopBar
         onMenuPress={() => setMenuVisible(true)}
         onProfilePress={() => console.log('Profile page')}
       />
 
-      <SubMenu />
+      <SubMenu
+        filterType={filterType}
+        onChangeFilter={setFilterType}
+        onChangePrice={(min, max) => {
+          setMinPrice(min);
+          setMaxPrice(max);
+        }}
+      />
 
       <FlatList
         data={listings}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) => item.uuid ?? index.toString()}
         renderItem={({ item }) => (
           <Pressable onPress={() => navigation.navigate('Details', { property: item })}>
             <View style={styles.card}>
@@ -37,9 +71,8 @@ export default function HomeScreen() {
                   <Ionicons name="heart-outline" size={24} color="#fff" />
                 </Pressable>
               </View>
-
               <View style={styles.infoSection}>
-                <Text style={styles.price}>{item.price}</Text>
+                <Text style={styles.price}>${item.price.toLocaleString()}</Text>
                 <Text style={styles.details}>
                   <Text style={styles.bold}>{item.bedrooms} bds</Text> |{' '}
                   <Text style={styles.bold}>{item.bathrooms} ba</Text> |{' '}

@@ -4,11 +4,21 @@ import { useState } from 'react';
 import SaleFilterModal from './SaleFilterModal';
 import PriceFilterModal from './PriceFilterModal';
 
-export default function SubMenu() {
+export default function SubMenu({
+  filterType,
+  onChangeFilter,
+  onChangePrice,
+}: {
+  filterType: 'sale' | 'rent';
+  onChangeFilter: (value: 'sale' | 'rent') => void;
+  onChangePrice: (min: number | null, max: number | null) => void;
+}) {
   const [saleModalVisible, setSaleModalVisible] = useState(false);
   const [priceModalVisible, setPriceModalVisible] = useState(false);
 
-  const [selectedStatus, setSelectedStatus] = useState('For Sale');
+  const [selectedStatus, setSelectedStatus] = useState(
+    filterType === 'sale' ? 'For Sale' : 'For Rent'
+  );
   const [selectedPrice, setSelectedPrice] = useState('Price');
 
   return (
@@ -46,7 +56,10 @@ export default function SubMenu() {
       <SaleFilterModal
         visible={saleModalVisible}
         onClose={() => setSaleModalVisible(false)}
-        onApply={(value) => setSelectedStatus(value)}
+        onApply={(value) => {
+          setSelectedStatus(value);
+          onChangeFilter(value === 'For Sale' ? 'sale' : 'rent');
+        }}
       />
 
       {/* Price Filter */}
@@ -56,8 +69,12 @@ export default function SubMenu() {
         onApply={(min, max) => {
           if (min === 'No Min' && max === 'No Max') {
             setSelectedPrice('Price');
+            onChangePrice(null, null);
           } else {
+            const minVal = min === 'No Min' ? null : parseInt(min);
+            const maxVal = max === 'No Max' ? null : parseInt(max);
             setSelectedPrice(`${min} - ${max}`);
+            onChangePrice(minVal, maxVal);
           }
         }}
       />
