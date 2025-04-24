@@ -14,6 +14,8 @@ export async function getProperties(type: 'sale' | 'rent'): Promise<Listing[]> {
     return [];
   }
 
+  console.log('Fetched from Supabase:', data); // <- aquí ahora está bien
+
   return data.map((item: any) => ({
     ...item,
     images: item.images

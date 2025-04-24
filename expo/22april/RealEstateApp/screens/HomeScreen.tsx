@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, Pressable, StyleSheet, Dimensions, Platform, StatusBar } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Dimensions,
+  Platform,
+  StatusBar,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
@@ -18,23 +27,50 @@ export default function HomeScreen() {
   const [menuVisible, setMenuVisible] = useState(false);
   const [listings, setListings] = useState<Listing[]>([]);
   const [filterType, setFilterType] = useState<'sale' | 'rent'>('sale');
-  const [minPrice, setMinPrice] = useState<number | null>(null);
-  const [maxPrice, setMaxPrice] = useState<number | null>(null);
+
+  const [filters, setFilters] = useState({
+    min: null,
+    max: null,
+    bedrooms: 'Any',
+    bathrooms: 'Any',
+    homeTypes: ['Apartment'], // ✅ Corregido: debe coincidir con los valores exactos en Supabase
+  });
 
   useEffect(() => {
     getProperties(filterType).then((data) => {
       if (data) {
         const filtered = data.filter((item) => {
-            const price = Number(item.price);
-            const matchesType = filterType === 'sale' ? item.for_sale : item.for_rent;
-            const matchesMin = minPrice === null || price >= minPrice;
-            const matchesMax = maxPrice === null || price <= maxPrice;
-            return matchesType && matchesMin && matchesMax;
-          });
+          const price = Number(item.price);
+          const matchesType = filterType === 'sale' ? item.for_sale : item.for_rent;
+          const matchesMin = filters.min === null || price >= filters.min;
+          const matchesMax = filters.max === null || price <= filters.max;
+  
+          const bedNum = parseInt(filters.bedrooms);
+          const matchesBeds =
+            filters.bedrooms === 'Any' || (!isNaN(bedNum) && item.bedrooms <= bedNum);
+  
+          const bathNum = parseInt(filters.bathrooms);
+          const matchesBaths =
+            filters.bathrooms === 'Any' || (!isNaN(bathNum) && item.bathrooms <= bathNum);
+  
+          const matchesHomeType =
+            filters.homeTypes.length === 0 || filters.homeTypes.includes(item.homeType);
+  
+          return (
+            matchesType &&
+            matchesMin &&
+            matchesMax &&
+            matchesBeds &&
+            matchesBaths &&
+            matchesHomeType
+          );
+        });
+  
+        console.log('Filtered results:', filtered);
         setListings(filtered);
       }
     });
-  }, [filterType, minPrice, maxPrice]);
+  }, [filterType, filters]);
 
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
@@ -53,10 +89,7 @@ export default function HomeScreen() {
       <SubMenu
         filterType={filterType}
         onChangeFilter={setFilterType}
-        onChangePrice={(min, max) => {
-          setMinPrice(min);
-          setMaxPrice(max);
-        }}
+        onApplyFilters={(newFilters) => setFilters(newFilters)}
       />
 
       <FlatList
@@ -76,7 +109,7 @@ export default function HomeScreen() {
                 <Text style={styles.details}>
                   <Text style={styles.bold}>{item.bedrooms} bds</Text> |{' '}
                   <Text style={styles.bold}>{item.bathrooms} ba</Text> |{' '}
-                  <Text style={styles.bold}>{item.sqft.toLocaleString()}</Text> sqft - House for sale
+                  <Text style={styles.bold}>{item.sqft.toLocaleString()}</Text> sqft - {item.homeType}
                 </Text>
                 <Text style={styles.address}>{item.address}</Text>
                 <Text style={styles.agency}>{item.agency}</Text>

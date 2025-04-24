@@ -1,8 +1,8 @@
 export type Listing = {
-    uuid?: string; 
     id: string;
+    uuid?: string;
     title: string;
-    price: string;
+    price: number;
     images: string[];
     description: string;
     bedrooms: number;
@@ -10,6 +10,7 @@ export type Listing = {
     sqft: number;
     address: string;
     agency: string;
-    for_sale:boolean;
-    for_rent:boolean;
+    for_sale?: boolean;
+    for_rent?: boolean;
+    homeType: 'Houses' | 'Townhomes' | 'Multi-Family' | 'Condos/Co-ops' | 'Lots/Land' | 'Apartments';
   };

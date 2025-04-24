@@ -8,7 +8,7 @@ type Props = {
   onApply: (selected: string) => void;
 };
 
-const options = ['For Sale', 'For Rent', 'Sold'];
+const options = ['For Sale', 'For Rent'];
 
 export default function SaleFilterModal({ visible, onClose, onApply }: Props) {
   const [selected, setSelected] = useState('For Sale');

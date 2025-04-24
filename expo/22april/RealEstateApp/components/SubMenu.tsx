@@ -2,47 +2,41 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import SaleFilterModal from './SaleFilterModal';
-import PriceFilterModal from './PriceFilterModal';
+import FilterModal from './FilterModal';
 
 export default function SubMenu({
   filterType,
   onChangeFilter,
-  onChangePrice,
+  onApplyFilters,
 }: {
   filterType: 'sale' | 'rent';
   onChangeFilter: (value: 'sale' | 'rent') => void;
-  onChangePrice: (min: number | null, max: number | null) => void;
+  onApplyFilters: (filters: {
+    min: number | null;
+    max: number | null;
+    bedrooms: string;
+    bathrooms: string;
+    homeTypes: string[];
+  }) => void;
 }) {
   const [saleModalVisible, setSaleModalVisible] = useState(false);
-  const [priceModalVisible, setPriceModalVisible] = useState(false);
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   const [selectedStatus, setSelectedStatus] = useState(
     filterType === 'sale' ? 'For Sale' : 'For Rent'
   );
-  const [selectedPrice, setSelectedPrice] = useState('Price');
 
   return (
     <>
       <View style={styles.container}>
         <View style={styles.leftGroup}>
-          <Pressable
-            style={styles.filterButton}
-            onPress={() => setSaleModalVisible(true)}
-          >
+          <Pressable style={styles.filterButton} onPress={() => setSaleModalVisible(true)}>
             <Text style={styles.buttonText}>{selectedStatus}</Text>
             <Ionicons name="chevron-down" size={16} color="#333" />
           </Pressable>
 
-          <Pressable
-            style={styles.filterButton}
-            onPress={() => setPriceModalVisible(true)}
-          >
-            <Text style={styles.buttonText}>{selectedPrice}</Text>
-            <Ionicons name="chevron-down" size={16} color="#333" />
-          </Pressable>
-
-          <Pressable style={styles.filterButton}>
-            <Text style={styles.buttonText}>More</Text>
+          <Pressable style={styles.filterButton} onPress={() => setFilterModalVisible(true)}>
+            <Text style={styles.buttonText}>Filters</Text>
             <Ionicons name="chevron-down" size={16} color="#333" />
           </Pressable>
         </View>
@@ -52,7 +46,7 @@ export default function SubMenu({
         </Pressable>
       </View>
 
-      {/* For Sale Filter */}
+      {/* Sale / Rent Modal */}
       <SaleFilterModal
         visible={saleModalVisible}
         onClose={() => setSaleModalVisible(false)}
@@ -62,20 +56,12 @@ export default function SubMenu({
         }}
       />
 
-      {/* Price Filter */}
-      <PriceFilterModal
-        visible={priceModalVisible}
-        onClose={() => setPriceModalVisible(false)}
-        onApply={(min, max) => {
-          if (min === 'No Min' && max === 'No Max') {
-            setSelectedPrice('Price');
-            onChangePrice(null, null);
-          } else {
-            const minVal = min === 'No Min' ? null : parseInt(min);
-            const maxVal = max === 'No Max' ? null : parseInt(max);
-            setSelectedPrice(`${min} - ${max}`);
-            onChangePrice(minVal, maxVal);
-          }
+      {/* Filter Modal */}
+      <FilterModal
+        visible={filterModalVisible}
+        onClose={() => setFilterModalVisible(false)}
+        onApply={(filters) => {
+          onApplyFilters(filters);
         }}
       />
     </>
