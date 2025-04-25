@@ -1,6 +1,10 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types';
+import { supabase } from '../supabase';
 import SaleFilterModal from './SaleFilterModal';
 import FilterModal from './FilterModal';
 
@@ -21,10 +25,36 @@ export default function SubMenu({
 }) {
   const [saleModalVisible, setSaleModalVisible] = useState(false);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-
   const [selectedStatus, setSelectedStatus] = useState(
     filterType === 'sale' ? 'For Sale' : 'For Rent'
   );
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      setIsLoggedIn(!!data.session);
+    };
+    checkSession();
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session);
+    });
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleFavoritesPress = () => {
+    if (isLoggedIn) {
+      navigation.navigate('Favourites');
+    } else {
+      navigation.navigate('Login');
+    }
+  };
 
   return (
     <>
@@ -39,11 +69,19 @@ export default function SubMenu({
             <Text style={styles.buttonText}>Filters</Text>
             <Ionicons name="chevron-down" size={16} color="#333" />
           </Pressable>
+
+          {/* ❤️ Favourites Button */}
+          <Pressable style={styles.filterButton} onPress={handleFavoritesPress}>
+            <Text style={styles.buttonText}>❤️ Favourites</Text>
+          </Pressable>
         </View>
 
-        <Pressable style={styles.saveButton}>
-          <Text style={styles.saveButtonText}>Save search</Text>
-        </Pressable>
+        {/* Save Search button hidden */}
+        {false && (
+          <Pressable style={styles.saveButton}>
+            <Text style={styles.saveButtonText}>Save search</Text>
+          </Pressable>
+        )}
       </View>
 
       {/* Sale / Rent Modal */}

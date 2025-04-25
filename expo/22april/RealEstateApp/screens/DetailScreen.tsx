@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,8 +10,10 @@ import {
   StatusBar,
 } from 'react-native';
 import { useNavigation, RouteProp, NavigationProp } from '@react-navigation/native';
-import { RootStackParamList } from '../App';
 import { Ionicons, Feather } from '@expo/vector-icons';
+import { RootStackParamList } from '../types';
+import { toggleFavorite } from '../utils/favorites';
+import { supabase } from '../supabase';
 import PropertyCarousel from '../components/PropertyCarousel';
 
 type DetailScreenRouteProp = RouteProp<RootStackParamList, 'Details'>;
@@ -20,6 +22,26 @@ const { height } = Dimensions.get('window');
 export default function DetailScreen({ route }: { route: DetailScreenRouteProp }) {
   const { property } = route.params;
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  useEffect(() => {
+    const fetchFavoriteStatus = async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const user = sessionData.session?.user;
+      if (!user) return;
+
+      const { data } = await supabase
+        .from('favorites')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('property_id', property.uuid)
+        .maybeSingle();
+
+      setIsFavorite(!!data);
+    };
+
+    fetchFavoriteStatus();
+  }, [property.uuid]);
 
   return (
     <View style={styles.container}>
@@ -34,9 +56,25 @@ export default function DetailScreen({ route }: { route: DetailScreenRouteProp }
           </Pressable>
 
           <View style={styles.topIcons}>
-            <Pressable onPress={() => console.log('Favorite')}>
-              <Ionicons name="heart-outline" size={22} color="#fff" style={styles.icon} />
+            <Pressable
+              onPress={async () => {
+                if (!property.uuid) return;
+                const result = await toggleFavorite(property.uuid);
+                if (result.success) {
+                  setIsFavorite((prev) => !prev);
+                } else {
+                  navigation.navigate('Login');
+                }
+              }}
+            >
+              <Ionicons
+                name={isFavorite ? 'heart' : 'heart-outline'}
+                size={22}
+                color="#fff"
+                style={styles.icon}
+              />
             </Pressable>
+
             <Pressable onPress={() => console.log('Share')}>
               <Feather name="share" size={22} color="#fff" style={styles.icon} />
             </Pressable>

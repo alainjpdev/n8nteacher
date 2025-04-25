@@ -3,7 +3,7 @@ import { View, StyleSheet, Pressable, Text, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../App';
+import { RootStackParamList } from '../types';
 
 // Adaptación de MapView y Marker según la plataforma
 let MapView: any, Marker: any;

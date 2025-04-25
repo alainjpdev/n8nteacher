@@ -3,7 +3,8 @@ import { View, StyleSheet, Pressable, Text } from 'react-native';
 import { Video, AVPlaybackStatus, ResizeMode } from 'expo-av';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../App';
+import { RootStackParamList } from '../types';
+
 
 export default function LandingScreen() {
   const videoRef = useRef<Video>(null);
