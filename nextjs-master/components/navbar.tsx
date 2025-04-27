@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import { User, Menu, Home, MapPin, Heart } from "lucide-react";
+import { User, Menu, Home, MapPin, Heart, Sparkles } from "lucide-react"; // 👈 incluye Sparkles
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
@@ -71,7 +71,7 @@ export default function Navbar() {
                   </Link>
                 </SheetClose>
                 <SheetClose asChild>
-                  <Link href="/buy" className="flex items-center gap-2 px-4 py-2 hover:bg-muted rounded-md">
+                  <Link href="/search" className="flex items-center gap-2 px-4 py-2 hover:bg-muted rounded-md">
                     <MapPin className="h-5 w-5" />
                     <span>For Sale</span>
                   </Link>
@@ -86,24 +86,36 @@ export default function Navbar() {
             </SheetContent>
           </Sheet>
 
-          <Link href="/" className="flex items-center gap-2">
-            <Home className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold">MiCasApp</span>
+          {/* Logo animado */}
+          <Link href="/" className="flex items-center gap-2 group">
+            <Home className="h-6 w-6 text-primary animate-pulse-slow" />
+            <span className="text-xl font-bold group-hover:text-primary transition-colors duration-300">
+              MiCasApp
+            </span>
           </Link>
         </div>
 
-        {/* Right: Heart + User */}
+        {/* Right: AI Power + Heart + User */}
         <div className="flex items-center gap-2">
+          {/* AI Power button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.push("/aipower")}
+          >
+            <Sparkles className="h-5 w-5" />
+          </Button>
+
           {isLoggedIn ? (
             <>
-              {/* Heart icon to /favorites */}
+              {/* Heart to favorites */}
               <Button asChild variant="ghost" size="icon">
                 <Link href="/favorites">
                   <Heart className="h-5 w-5" />
                 </Link>
               </Button>
 
-              {/* Avatar with Dropdown */}
+              {/* User dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon">

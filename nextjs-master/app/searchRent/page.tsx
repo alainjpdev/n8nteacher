@@ -23,12 +23,12 @@ import {
 import { getProperties } from "@/lib/supabase";
 import { parseImages } from "@/lib/parse-images"; // 👈 IMPORTANTE
 
-export default function SearchPage() {
+export default function SearchRentPage() {
   const [properties, setProperties] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [priceRange, setPriceRange] = useState([0, 5000000]);
  {/* const [propertyType, setPropertyType] = useState<"all" | "sale" | "rent">("all");*/}
-  const [propertyType, setPropertyType] = useState<string>("sale");
+  const [propertyType, setPropertyType] = useState<string>("rent");
   const [bedrooms, setBedrooms] = useState<string>("any");
   const [bathrooms, setBathrooms] = useState<string>("any");
 
@@ -93,7 +93,7 @@ export default function SearchPage() {
   return (
     <div className="container px-4 py-8 md:px-6 md:py-12">
       <h1 className="mb-6 text-3xl font-bold tracking-tight md:text-4xl">
-        Popular Homes for Sale
+        Popular Homes for Rent
       </h1>
 
       <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end">

@@ -101,6 +101,7 @@ const config: Config = {
         'accordion-up': 'accordion-up 0.2s ease-out',
         'fade-in': 'fade-in 0.2s ease-out',
         'fade-out': 'fade-out 0.2s ease-out',
+        'pulse-slow': 'pulse 3s infinite', // 👈 ESTE ES EL NUEVO PARA EL LOGO
       },
     },
   },

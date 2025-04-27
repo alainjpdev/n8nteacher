@@ -106,7 +106,7 @@ export default function RentPage() {
               </p>
             </div>
             <Button variant="outline" asChild>
-              <Link href="/search">View all</Link>
+              <Link href="/searchRent">View all</Link>
             </Button>
           </div>
 
