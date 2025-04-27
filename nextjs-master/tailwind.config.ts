@@ -79,6 +79,7 @@ const config: Config = {
         },
       },
       keyframes: {
+        // Accordion animations
         'accordion-down': {
           from: { height: '0' },
           to: { height: 'var(--radix-accordion-content-height)' },
@@ -87,6 +88,7 @@ const config: Config = {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: '0' },
         },
+        // Fade animations
         'fade-in': {
           from: { opacity: '0' },
           to: { opacity: '1' },
@@ -95,13 +97,19 @@ const config: Config = {
           from: { opacity: '1' },
           to: { opacity: '0' },
         },
+        // Marquee animation for logos
+        'marquee': {
+          '0%': { transform: 'translateX(100%)' },
+          '100%': { transform: 'translateX(-100%)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'fade-in': 'fade-in 0.2s ease-out',
         'fade-out': 'fade-out 0.2s ease-out',
-        'pulse-slow': 'pulse 3s infinite', // 👈 ESTE ES EL NUEVO PARA EL LOGO
+        'pulse-slow': 'pulse 3s infinite', // Logo slow pulse
+        'marquee': 'marquee 30s linear infinite', // Logos sliding left-right
       },
     },
   },
