@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import { User, Menu, Home, MapPin, Heart, Sparkles } from "lucide-react"; // 👈 incluye Sparkles
+import { User, Menu, Home, MapPin, Heart, Sparkles, Map } from "lucide-react"; // 👈 Agregado icono Map
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
@@ -82,6 +82,12 @@ export default function Navbar() {
                     <span>For Rent</span>
                   </Link>
                 </SheetClose>
+                <SheetClose asChild>
+                  <Link href="/map" className="flex items-center gap-2 px-4 py-2 hover:bg-muted rounded-md">
+                    <Map className="h-5 w-5" />
+                    <span>Map</span>
+                  </Link>
+                </SheetClose>
               </div>
             </SheetContent>
           </Sheet>
@@ -95,7 +101,7 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* Right: AI Power + Heart + User */}
+        {/* Right: AI Power + Map + Heart + User */}
         <div className="flex items-center gap-2">
           {/* AI Power button */}
           <Button
@@ -104,6 +110,15 @@ export default function Navbar() {
             onClick={() => router.push("/aipower")}
           >
             <Sparkles className="h-5 w-5" />
+          </Button>
+
+          {/* Map button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.push("/map")}
+          >
+            <Map className="h-5 w-5" />
           </Button>
 
           {isLoggedIn ? (

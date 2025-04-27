@@ -37,18 +37,21 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative h-[80vh] min-h-[600px] w-full">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage:
-              "url('https://msfnvmxeohsanzobbqrt.supabase.co/storage/v1/object/public/images//aaf73727-d541-4209-b3fe-7a878b42d76d.jpeg.avif?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2')",
-            backgroundPosition: "center 30%",
-          }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30" />
-        </div>
+      <section className="relative h-[80vh] min-h-[600px] w-full overflow-hidden">
+        {/* 🎥 Video de fondo */}
+        <video
+          className="absolute inset-0 h-full w-full object-cover"
+          src="https://msfnvmxeohsanzobbqrt.supabase.co/storage/v1/object/public/videos//villa.mov" // ⚡ Aquí pones tu video real
+          autoPlay
+          loop
+          muted
+          playsInline
+        />
+        
+        {/* Capa oscura encima del video */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30" />
 
+        {/* Contenido encima del video */}
         <div className="container relative z-10 flex h-full flex-col items-center justify-center px-4 text-center md:px-6">
           <h1 className="mb-4 max-w-3xl text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">
             Find Your Perfect Home
