@@ -21,9 +21,9 @@ export default function SearchTabs() {
   const handleSearch = () => {
     if (searchLocation === "Tulum") {
       if (activeTab === "buy") {
-        router.push("/buy"); // If on For Sale tab
+        router.push("/search"); // If on For Sale tab
       } else if (activeTab === "rent") {
-        router.push("/rent"); // If on For Rent tab
+        router.push("/searchRent"); // If on For Rent tab
       }
     }
   };

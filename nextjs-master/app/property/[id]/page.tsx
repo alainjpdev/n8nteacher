@@ -41,6 +41,9 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
     year_built: property.year_built,
     city: property.city,
     state: property.state,
+    country: property.country,
+    imageUrl: property.images?.[0] || "",
+
   };
 
   return <PropertyPageClient property={formattedProperty} />;

@@ -87,7 +87,7 @@ export default function Home() {
                 type={property.type as "sale" | "rent"}
                 bedrooms={property.bedrooms ?? 0 }
                 bathrooms={property.bathrooms ?? 0}
-                squareFeet={property.square_feet ?? 0}
+                sqft={property.sqft ?? 0}
                 imageUrl={property.images[0] || ""}
                 isNew={false}
                 isFeatured={true}
