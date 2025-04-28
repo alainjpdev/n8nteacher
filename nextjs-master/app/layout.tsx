@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import Navbar from '@/components/navbar';
 import Footer from '@/components/footer';
+import ConditionalLayout from '../components/conditional-layout'; // 👈 nuevo
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -37,11 +38,9 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} h-full`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          <div className="flex min-h-screen flex-col">
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
+          <ConditionalLayout>
+            {children}
+          </ConditionalLayout>
         </ThemeProvider>
       </body>
     </html>
