@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { toggleFavorite } from "@/lib/supabase"; // ✅ Toggle from supabase
+import { toggleFavorite } from "@/lib/supabase";
 
 export interface PropertyProps {
   id: string;
@@ -24,7 +24,7 @@ export interface PropertyProps {
   imageUrl: string;
   isNew?: boolean;
   isFeatured?: boolean;
-  isFavorite?: boolean; // ✅ now part of props
+  isFavorite?: boolean;
 }
 
 function PropertyCard({
@@ -42,6 +42,7 @@ function PropertyCard({
   isFavorite: isFavoriteProp = false,
 }: PropertyProps) {
   const [isFavorite, setIsFavorite] = useState(isFavoriteProp);
+  const [loaded, setLoaded] = useState(false); // 👈 loader state
   const router = useRouter();
 
   const handleFavorite = async () => {
@@ -50,24 +51,27 @@ function PropertyCard({
       setIsFavorite(newState);
     } catch (error: any) {
       if (error.message === "redirect") {
-        router.push("/login"); // ✅ Redirect to login if not logged
+        router.push("/login");
       } else {
         console.error("Error toggling favorite:", error);
       }
     }
   };
 
-  const validImageUrl = imageUrl;
-
   return (
     <Card className="overflow-hidden transition-all duration-300 hover:shadow-md">
       <div className="relative">
         <AspectRatio ratio={4 / 3}>
+          {/* Skeleton while loading */}
+          {!loaded && (
+            <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-md" />
+          )}
           <Image
-            src={validImageUrl}
+            src={imageUrl}
             alt={title}
             fill
-            className="object-cover transition-transform duration-500 hover:scale-105"
+            onLoad={() => setLoaded(true)} // 👈 sets loaded true
+            className={`object-cover transition-opacity duration-700 ${loaded ? "opacity-100" : "opacity-0"}`}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         </AspectRatio>
@@ -135,4 +139,4 @@ function PropertyCard({
   );
 }
 
-export default PropertyCard; // ✅ Now default export (fix your import error!)
+export default PropertyCard;
