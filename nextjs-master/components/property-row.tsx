@@ -23,7 +23,7 @@ export default function PropertyRow({ title, properties }: PropertyRowProps) {
             type={property.type}
             bedrooms={property.bedrooms}
             bathrooms={property.bathrooms}
-            squareFeet={property.square_feet}
+            sqft={property.sqft}
             imageUrl={Array.isArray(property.images) ? property.images[0] : ""}
             isNew={false} // Puedes cambiar esto si quieres pasar otra prop
           />

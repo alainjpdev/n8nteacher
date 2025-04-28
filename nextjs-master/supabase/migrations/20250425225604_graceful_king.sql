@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS properties (
   type text NOT NULL CHECK (type IN ('sale', 'rent')),
   bedrooms integer,
   bathrooms numeric,
-  square_feet integer,
+  sqft integer,
   year_built integer,
   features jsonb,
   status text DEFAULT 'active',

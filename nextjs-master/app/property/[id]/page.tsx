@@ -1,16 +1,17 @@
 import { notFound } from "next/navigation";
-import { getPropertyById, getProperties } from "@/lib/supabase"; // ahora usas 2 funciones
-import PropertyClient from "./client"; // la UI del detalle de propiedad
+import { getPropertyById, getProperties } from "@/lib/supabase";
+import PropertyPageClient from "./client";
+import { parseImages } from "@/lib/parse-images";
 
 interface PropertyPageProps {
-  params: { id: string }; // capturamos el ID de la URL
+  params: { id: string };
 }
 
-// Static generation (SSG)
+// ✅ GENERAMOS TODOS LOS ID DE LAS PROPIEDADES
 export async function generateStaticParams() {
-  const properties = await getProperties(); // traer todas las propiedades
+  const properties = await getProperties(); // 🚀 Trae todas las propiedades
   return properties.map((property) => ({
-    id: property.id, // generamos un path para cada id
+    id: property.id, // 🔥 Devuelve todos los IDs
   }));
 }
 
@@ -26,5 +27,21 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
     notFound();
   }
 
-  return <PropertyClient property={property} />;
+  const formattedProperty = {
+    id: property.id,
+    title: property.title,
+    address: property.address,
+    price: property.price,
+    type: property.type || "sale",
+    bedrooms: property.bedrooms,
+    bathrooms: property.bathrooms,
+    sqft: property.sqft ?? null,
+    images: parseImages(property.images),
+    description: property.description, 
+    year_built: property.year_built,
+    city: property.city,
+    state: property.state,
+  };
+
+  return <PropertyPageClient property={formattedProperty} />;
 }

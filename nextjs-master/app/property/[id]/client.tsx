@@ -13,13 +13,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 interface Property {
   id: string;
   title: string;
+  description: string;
   address: string;
   price: number | null;
   type: "sale" | "rent";
   bedrooms: number | null;
   bathrooms: number | null;
-  squareFeet: number | null;
+  sqft: number | null;
   images: string[];
+  year_built: number | null;
+  city: string | null;
+  state: string | null;
+  country: string | null;
 }
 
 export default function PropertyPageClient({ property }: { property: Property }) {
@@ -65,8 +70,8 @@ export default function PropertyPageClient({ property }: { property: Property })
               <div className="flex items-center gap-1">
                 <Square className="h-4 w-4" />
                 <span>
-                  {typeof property.squareFeet === "number"
-                    ? `${property.squareFeet.toLocaleString()} sq ft`
+                  {typeof property.sqft === "number"
+                    ? `${property.sqft.toLocaleString()} sq ft`
                     : "?"}
                 </span>
               </div>
@@ -96,8 +101,8 @@ export default function PropertyPageClient({ property }: { property: Property })
                   Discover this {property.title.toLowerCase()} featuring{" "}
                   {property.bedrooms ?? "?"} bedrooms and{" "}
                   {property.bathrooms ?? "?"} bathrooms across{" "}
-                  {typeof property.squareFeet === "number"
-                    ? `${property.squareFeet.toLocaleString()}`
+                  {typeof property.sqft === "number"
+                    ? `${property.sqft.toLocaleString()}`
                     : "?"}{" "}
                   sq ft.
                 </p>

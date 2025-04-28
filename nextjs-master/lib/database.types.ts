@@ -19,12 +19,12 @@ export type Database = {
           type: string;
           bedrooms: number | null;
           bathrooms: number | null;
-          square_feet: number | null;
+          sqft: number | null;
           year_built: number | null;
           features: Json | null;
           status: string | null;
-          lat: number | null;
-          lng: number | null;
+          latitude: number | null;
+          longitude: number | null;
           images: Json | null;
           created_at: string;
           updated_at: string;

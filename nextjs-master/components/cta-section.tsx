@@ -54,15 +54,12 @@ export default function CTASection() {
           <div className="overflow-hidden relative w-full">
             <div className="flex animate-marquee gap-16 whitespace-nowrap">
               {/* Logos */}
-              <Image src="https://maxproperties.com.mx/nuevo/wp-content/uploads/2025/04/logo-max-web.png" alt="Agency 1" width={120} height={60} className="opacity-80" />
+              <Image src="https://maxproperties.com.mx/nuevo/wp-content/uploads/2025/04/logo-max-web.png" alt="Agency 1" width={120} height={60} className="opacity-80" style={{ width: '100px' }}  />
               <Image src="https://www.zisla.com/static/assets/zisla-logo-1.fef355eb.png" alt="Agency 2" width={120} height={60} className="opacity-80" />
-              <Image src="https://www.rivieramayarealestategroup.com/wp-content/uploads/2024/02/RMREG-logo-2024_2x.png" alt="Agency 3" width={120} height={60} className="opacity-80" />
+              <Image src="https://www.rivieramayarealestategroup.com/wp-content/uploads/2024/02/RMREG-logo-2024_2x.png" alt="Agency 3" width={120} height={60} className="opacity-80" style={{ width: '100px' }}/>
               <Image src="https://img-v2.gtsstatic.net/reno/imagereader.aspx?imageurl=https%3A%2F%2Fimg-v2.gtsstatic.net%2Freno%2Fimagereader.aspx%3Fimageurl%3Dhttps%3A%2F%2Fapi.sothebysrealty.com%2Fresources%2Fsiteresources%2Fmy%20folder%2Fhugeheader%2Flogo.svg%26option%3DN%26permitphotoenlargement%3Dfalse&option=N&permitphotoenlargement=false" alt="Agency 4" width={120} height={60} className="opacity-80" />
-              <Image src="/https://cdn.prod.website-files.com/67dc8427d817f0abf64651a5/67dc8427d817f0abf64651f7_tulum-land-property.webp" alt="Agency 5" width={120} height={60} className="opacity-80" />
-              {/* Repetimos para efecto infinito */}
-              <Image src="/logos/logo1.png" alt="Agency 1" width={120} height={60} className="opacity-80" />
-              <Image src="/logos/logo2.png" alt="Agency 2" width={120} height={60} className="opacity-80" />
-              <Image src="/logos/logo3.png" alt="Agency 3" width={120} height={60} className="opacity-80" />
+              
+              
             </div>
           </div>
         </div>

@@ -41,7 +41,7 @@ export default function Home() {
         {/* 🎥 Video de fondo */}
         <video
           className="absolute inset-0 h-full w-full object-cover"
-          src="https://msfnvmxeohsanzobbqrt.supabase.co/storage/v1/object/public/videos//villa.mov" // ⚡ Aquí pones tu video real
+          src="https://msfnvmxeohsanzobbqrt.supabase.co/storage/v1/object/public/videos//0427%20(1).mov" // ⚡ Aquí pones tu video real
           autoPlay
           loop
           muted
@@ -82,12 +82,12 @@ export default function Home() {
                 key={property.id}
                 id={property.id}
                 title={property.title}
-                address={property.address}
+                address={property.address ?? ''}
                 price={property.price}
                 type={property.type as "sale" | "rent"}
-                bedrooms={property.bedrooms}
-                bathrooms={property.bathrooms}
-                squareFeet={property.square_feet}
+                bedrooms={property.bedrooms ?? 0 }
+                bathrooms={property.bathrooms ?? 0}
+                squareFeet={property.square_feet ?? 0}
                 imageUrl={property.images[0] || ""}
                 isNew={false}
                 isFeatured={true}

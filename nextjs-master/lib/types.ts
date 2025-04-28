@@ -1,20 +1,25 @@
 export interface Listing {
+    latitude: any;
     id: string;
     title: string;
-    address: string;
+    address?: string | null; 
     price: number;
     description?: string;
-    type: "sale" | "rent";
-    bedrooms: number;
-    bathrooms: number;
-    square_feet: number;
+    type?: string | null; 
+    bedrooms?: number | null;
+    bathrooms?: number | null;
+    sqft?: number | null;
     year_built?: number;
     features?: any;
     status?: string;
-    lat?: number;
-    lng?: number;
+    latitud?: number;
+    longitude?: number;
     images: string[]; // o string[], si guardas varias imágenes
     created_at?: string;
     updated_at?: string;
     user_id?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    
   }

@@ -20,7 +20,7 @@ export interface PropertyProps {
   type: "sale" | "rent";
   bedrooms: number;
   bathrooms: number;
-  squareFeet: number;
+  sqft: number;
   imageUrl: string;
   isNew?: boolean;
   isFeatured?: boolean;
@@ -35,7 +35,7 @@ function PropertyCard({
   type,
   bedrooms,
   bathrooms,
-  squareFeet,
+  sqft,
   imageUrl,
   isNew,
   isFeatured,
@@ -121,7 +121,7 @@ function PropertyCard({
           </div>
           <div className="flex items-center gap-1">
             <Square className="h-4 w-4" />
-            <span>{squareFeet ? `${squareFeet.toLocaleString()} sq ft` : "N/A"}</span>
+            <span>{sqft ? `${sqft.toLocaleString()} sq ft` : "N/A"}</span>
           </div>
         </div>
       </CardContent>

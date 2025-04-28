@@ -261,7 +261,7 @@ export default function SearchRentPage() {
                 type={property.type}
                 bedrooms={property.bedrooms}
                 bathrooms={property.bathrooms}
-                squareFeet={property.square_feet}
+                sqft={property.sqft}
                 imageUrl={property.images[0] || ""}
               />
             ))}

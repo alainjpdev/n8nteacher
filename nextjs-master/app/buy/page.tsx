@@ -25,7 +25,7 @@ export default function BuyPage() {
         type: p.type || "sale",
         bedrooms: p.bedrooms ?? 0,
         bathrooms: p.bathrooms ?? 0,
-        squareFeet: p.sqft ?? 0,  // 👈 corregimos el nombre
+        sqft: p.sqft ?? 0,  // 👈 corregimos el nombre
         images: p.images || [],    // fallback si no hay imágenes
       }));
 
@@ -68,7 +68,7 @@ export default function BuyPage() {
                 type={property.type}
                 bedrooms={property.bedrooms}
                 bathrooms={property.bathrooms}
-                squareFeet={property.squareFeet}
+                sqft={property.sqft}
                 imageUrl={Array.isArray(property.images) && property.images.length > 0 
                   ? property.images[0] 
                   : "/fallback.jpg"

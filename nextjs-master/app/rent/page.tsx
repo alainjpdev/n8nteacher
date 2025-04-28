@@ -26,7 +26,7 @@ export default function RentPage() {
         type: p.type || "rent",
         bedrooms: p.bedrooms ?? 0,
         bathrooms: p.bathrooms ?? 0,
-        squareFeet: p.sqft ?? 0,
+        sqft: p.sqft ?? 0,
         images: p.images || [],
       }));
 
@@ -121,7 +121,7 @@ export default function RentPage() {
                 type={property.type}
                 bedrooms={property.bedrooms}
                 bathrooms={property.bathrooms}
-                squareFeet={property.squareFeet}
+                sqft={property.sqft}
                 imageUrl={Array.isArray(property.images) && property.images.length > 0 
                   ? property.images[0] 
                   : "/fallback.jpg"
