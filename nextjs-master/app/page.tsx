@@ -48,10 +48,10 @@ export default function Home() {
     return (
       <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
         <video
-          src="https://msfnvmxeohsanzobbqrt.supabase.co/storage/v1/object/public/videos/ai-intro.mp4" // 👈 Cambia aquí tu video intro
+          src="https://msfnvmxeohsanzobbqrt.supabase.co/storage/v1/object/public/videos//ai.mp4" // 👈 Cambia aquí tu video intro
           autoPlay
           playsInline
-          muted
+          
           className="w-full h-full object-cover"
         />
         {/* Optional: Puedes agregar un mensaje encima del video */}
