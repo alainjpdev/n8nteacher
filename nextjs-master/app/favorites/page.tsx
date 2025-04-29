@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase, toggleFavorite } from "@/lib/supabase"; // ✅
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
+import { Trash2 } from "lucide-react";
+import { toast } from "sonner"; // 👈 IMPORTANTE
 
 export default function FavoritesPage() {
   const [favorites, setFavorites] = useState<any[]>([]);
@@ -16,7 +18,7 @@ export default function FavoritesPage() {
     const fetchFavorites = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
-        router.push("/login"); // If not logged in, redirect
+        router.push("/login");
         return;
       }
 
@@ -39,6 +41,18 @@ export default function FavoritesPage() {
 
     fetchFavorites();
   }, [router]);
+
+  const handleRemoveFavorite = async (propertyId: string) => {
+    try {
+      await toggleFavorite(propertyId);
+      setFavorites((prev) => prev.filter((fav) => fav.property?.id !== propertyId));
+      
+      toast.success("Removed from favorites"); // ✅ muestra toast
+    } catch (error) {
+      console.error("Error removing favorite:", error);
+      toast.error("Failed to remove favorite"); // ✅ error
+    }
+  };
 
   if (loading) {
     return (
@@ -71,7 +85,15 @@ export default function FavoritesPage() {
 
           return (
             <Card key={property.id}>
-              <CardContent className="p-4">
+              <CardContent className="p-4 relative">
+                <button
+                  className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
+                  onClick={() => handleRemoveFavorite(property.id)}
+                  title="Remove from favorites"
+                >
+                  <Trash2 className="h-5 w-5" />
+                </button>
+
                 <Link href={`/property/${property.id}`}>
                   <img
                     src={Array.isArray(property.images) && property.images.length > 0 ? property.images[0] : "/fallback.jpg"}

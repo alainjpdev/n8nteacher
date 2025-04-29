@@ -20,33 +20,35 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { getProperties } from "@/lib/supabase";
-import { parseImages } from "@/lib/parse-images"; // 👈 IMPORTANTE
+import { getProperties, getFavoritePropertyIds } from "@/lib/supabase";
+import { parseImages } from "@/lib/parse-images";
 
 export default function SearchRentPage() {
   const [properties, setProperties] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [priceRange, setPriceRange] = useState([0, 5000000]);
- {/* const [propertyType, setPropertyType] = useState<"all" | "sale" | "rent">("all");*/}
   const [propertyType, setPropertyType] = useState<string>("rent");
   const [bedrooms, setBedrooms] = useState<string>("any");
   const [bathrooms, setBathrooms] = useState<string>("any");
-
-  // 👇 Estado para sugerencias (autocomplete)
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [suggestions] = useState(["Tulum"]); // Puedes agregar más aquí: ["Tulum", "Playa del Carmen", "Cancún"]
+  const [suggestions] = useState(["Tulum"]);
 
   useEffect(() => {
     const fetchProperties = async () => {
-      const fetchedProperties = await getProperties();
+      try {
+        const fetchedProperties = await getProperties();
+        const favoriteIds = await getFavoritePropertyIds();
 
-      // 🔥 Parseamos imágenes
-      const parsed = fetchedProperties.map((p: any) => ({
-        ...p,
-        images: parseImages(p.images),
-      }));
+        const parsed = fetchedProperties.map((p: any) => ({
+          ...p,
+          images: parseImages(p.images),
+          isFavorite: favoriteIds.includes(p.id),
+        }));
 
-      setProperties(parsed);
+        setProperties(parsed);
+      } catch (error) {
+        console.error("Error fetching properties:", error);
+      }
     };
 
     fetchProperties();
@@ -85,7 +87,7 @@ export default function SearchRentPage() {
   const resetFilters = () => {
     setSearchTerm("");
     setPriceRange([0, 5000000]);
-    setPropertyType("sale");
+    setPropertyType("rent");
     setBedrooms("any");
     setBathrooms("any");
   };
@@ -97,10 +99,9 @@ export default function SearchRentPage() {
       </h1>
 
       <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end">
-        {/* Search Bar con Sugerencias */}
+        {/* Search bar */}
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-
           <Input
             placeholder="Search by location, property name..."
             value={searchTerm}
@@ -109,7 +110,6 @@ export default function SearchRentPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
           />
-
           {showSuggestions && (
             <div className="absolute left-0 right-0 top-full mt-1 rounded-md border bg-white shadow-lg z-10">
               {suggestions
@@ -132,7 +132,7 @@ export default function SearchRentPage() {
           )}
         </div>
 
-        {/* Filtros Botón */}
+        {/* Filters Button */}
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="outline">
@@ -164,7 +164,7 @@ export default function SearchRentPage() {
                 />
               </div>
 
-              {/* Property Type Filter */}
+              {/* Property Type */}
               <div>
                 <h3 className="mb-3 font-medium">Property Type</h3>
                 <div className="flex flex-wrap gap-2">
@@ -173,7 +173,7 @@ export default function SearchRentPage() {
                       key={type}
                       variant={propertyType === type ? "default" : "outline"}
                       size="sm"
-                      onClick={() => setPropertyType(type as "all" | "sale" | "rent")}
+                      onClick={() => setPropertyType(type)}
                     >
                       {type === "all" ? "All" : type === "sale" ? "For Sale" : "For Rent"}
                     </Button>
@@ -181,7 +181,7 @@ export default function SearchRentPage() {
                 </div>
               </div>
 
-              {/* Bedrooms Filter */}
+              {/* Bedrooms */}
               <div>
                 <h3 className="mb-3 font-medium">Bedrooms</h3>
                 <Select value={bedrooms} onValueChange={setBedrooms}>
@@ -198,7 +198,7 @@ export default function SearchRentPage() {
                 </Select>
               </div>
 
-              {/* Bathrooms Filter */}
+              {/* Bathrooms */}
               <div>
                 <h3 className="mb-3 font-medium">Bathrooms</h3>
                 <Select value={bathrooms} onValueChange={setBathrooms}>
@@ -215,7 +215,7 @@ export default function SearchRentPage() {
                 </Select>
               </div>
 
-              {/* Reset Filters Button */}
+              {/* Reset Button */}
               <Button variant="outline" className="w-full" onClick={resetFilters}>
                 <X className="mr-2 h-4 w-4" />
                 Reset Filters
@@ -224,29 +224,19 @@ export default function SearchRentPage() {
           </SheetContent>
         </Sheet>
 
-        {/* Botón de búsqueda */}
+        {/* Search Button */}
         <Button>
           <Search className="mr-2 h-4 w-4" />
           Search
         </Button>
       </div>
 
-      {/* Resultados */}
+      {/* Properties */}
       <div>
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-semibold">
             {filteredProperties.length} Properties Found
           </h2>
-          <Select defaultValue="newest">
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="newest">Newest</SelectItem>
-              <SelectItem value="price-asc">Price: Low to High</SelectItem>
-              <SelectItem value="price-desc">Price: High to Low</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
 
         {filteredProperties.length > 0 ? (
@@ -263,6 +253,7 @@ export default function SearchRentPage() {
                 bathrooms={property.bathrooms}
                 sqft={property.sqft}
                 imageUrl={property.images[0] || ""}
+                isFavorite={property.isFavorite}
               />
             ))}
           </div>

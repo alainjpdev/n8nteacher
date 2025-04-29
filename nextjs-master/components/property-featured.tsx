@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getProperties } from "@/lib/supabase";
+import { getProperties, getFavoritePropertyIds } from "@/lib/supabase";
 import PropertyCard, { type PropertyProps } from "@/components/property-card";
 
 export default function PropertyFeatured() {
@@ -10,6 +10,7 @@ export default function PropertyFeatured() {
   useEffect(() => {
     const fetchFeatured = async () => {
       const properties = await getProperties();
+      const favoriteIds = await getFavoritePropertyIds(); // 👈 traer favoritos del usuario
 
       const formatted = properties.slice(0, 3).map((property) => ({
         id: property.id,
@@ -20,9 +21,10 @@ export default function PropertyFeatured() {
         bedrooms: property.bedrooms,
         bathrooms: property.bathrooms,
         sqft: property.sqft,
-        imageUrl: property.images?.[0] || "", // ✅ importante para evitar error de tipo
+        imageUrl: property.images?.[0] || "",
         isNew: false,
         isFeatured: true,
+        isFavorite: favoriteIds.includes(property.id), // 👈 importante
       }));
 
       setFeatured(formatted);
