@@ -41,24 +41,27 @@ export default function Home() {
 
     setTimeout(() => {
       router.push("/ai-assistant");
-    }, 6000); // ⏱ después de 6 segundos (6000 ms)
+    }, 12000); // ⏱ después de 6 segundos (6000 ms)
   };
 
   if (playingIntro) {
     return (
       <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
-        <video
-          src="https://msfnvmxeohsanzobbqrt.supabase.co/storage/v1/object/public/videos//ai.mp4" // 👈 Cambia aquí tu video intro
-          autoPlay
-          playsInline
-          
-          className="w-full h-full object-cover"
-        />
-        {/* Optional: Puedes agregar un mensaje encima del video */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <h1 className="text-4xl font-bold text-white animate-pulse">Loading AI Experience...</h1>
-        </div>
-      </div>
+  <video
+    src="https://msfnvmxeohsanzobbqrt.supabase.co/storage/v1/object/public/videos//ai.mp4"
+    autoPlay
+    playsInline
+    muted
+    className="w-full h-full object-cover"
+  />
+  
+  {/* Overlay de texto centrado y responsivo */}
+  <div className="absolute inset-0 flex items-center justify-center px-4">
+    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white animate-pulse text-center">
+      Loading AI Experience...
+    </h1>
+  </div>
+</div>
     );
   }
 
@@ -71,7 +74,7 @@ export default function Home() {
           src="https://msfnvmxeohsanzobbqrt.supabase.co/storage/v1/object/public/videos/0427%20(1).mov"
           autoPlay
           loop
-          muted
+          
           playsInline
         />
 
