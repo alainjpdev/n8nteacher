@@ -41,27 +41,35 @@ export default function Home() {
 
     setTimeout(() => {
       router.push("/ai-assistant");
-    }, 12000); // ⏱ después de 6 segundos (6000 ms)
+    }, 9000); // ⏱ después de 6 segundos (6000 ms)
   };
 
   if (playingIntro) {
     return (
       <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
-  <video
-    src="https://msfnvmxeohsanzobbqrt.supabase.co/storage/v1/object/public/videos//ai.mp4"
-    autoPlay
-    playsInline
-    muted
-    className="w-full h-full object-cover"
-  />
+        <video
+          src="https://msfnvmxeohsanzobbqrt.supabase.co/storage/v1/object/public/videos//ai.mp4"
+          autoPlay
+          playsInline
+          className="w-full h-full object-cover"
+        />
   
-  {/* Overlay de texto centrado y responsivo */}
-  <div className="absolute inset-0 flex items-center justify-center px-4">
-    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white animate-pulse text-center">
-      Loading AI Experience...
-    </h1>
-  </div>
-</div>
+        {/* Overlay de texto centrado y responsivo */}
+        <div className="absolute inset-0 flex items-center justify-center px-4">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white animate-pulse text-center">
+            Loading AI Experience...
+          </h1>
+        </div>
+  
+        {/* Botón de Skip en la esquina superior derecha */}
+       {/* Botón de Skip que redirige */}
+       <button
+  onClick={() => router.push("/ai-assistant")}
+  className="absolute top-4 right-4 z-50 px-4 py-2 border border-white text-white bg-transparent rounded hover:bg-white/10 transition"
+>
+  Skip
+</button>
+      </div>
     );
   }
 
