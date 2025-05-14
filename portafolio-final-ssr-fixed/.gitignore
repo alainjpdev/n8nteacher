@@ -1,4 +1,7 @@
 # dependencies
+# .gitignore
+.next/
+node_modules/
 /node_modules
 
 # next.js build
