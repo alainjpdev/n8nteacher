@@ -1,14 +1,12 @@
-.vercel
-# dependencies
+# Next.js build output
+.next/
+
+# Dependencies
 node_modules/
 
-# builds
-.next/
-dist/
+# MacOS
+.DS_Store
 
-# env files
+# Env files
 .env
 .env.local
-
-# system
-.DS_Store
