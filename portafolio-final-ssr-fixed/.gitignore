@@ -4,9 +4,7 @@
 # Dependencies
 node_modules/
 
-# MacOS
+# Others
 .DS_Store
-
-# Env files
 .env
 .env.local
