@@ -1,0 +1,8 @@
+{
+    "rewrites": [
+      {
+        "source": "/summercamp(/.*)?",
+        "destination": "https://pp-alpha-one.vercel.app$1"
+      }
+    ]
+  }
