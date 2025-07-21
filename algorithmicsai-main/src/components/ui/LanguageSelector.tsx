@@ -12,7 +12,7 @@ const LanguageSelector: React.FC = () => {
     <select
       value={i18n.language}
       onChange={handleChange}
-      className="bg-transparent text-sm text-gray-600 border-none focus:ring-0 focus:outline-none cursor-pointer"
+      className="bg-panel text-text text-sm border-none focus:ring-0 focus:outline-none cursor-pointer" // Paleta dark mode
       aria-label={t('language')}
     >
       <option value="es">ES</option>

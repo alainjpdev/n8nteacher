@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import { ProtectedRoute } from './routes/ProtectedRoute';
+import { useDarkMode } from './hooks/useDarkMode';
 
 // Layouts
 import { StudentLayout } from './layouts/StudentLayout';
@@ -24,6 +25,7 @@ import Reports from './pages/dashboard/Reports';
 import StudentClasses from './pages/dashboard/StudentClasses';
 import Settings from './pages/dashboard/Settings';
 import Profile from './pages/dashboard/Profile';
+import NotFound from './pages/NotFound';
 
 // Layout wrapper component
 const DashboardLayoutWrapper: React.FC = () => {
@@ -57,6 +59,7 @@ const DashboardRouter: React.FC = () => {
 
 const App: React.FC = () => {
   const { checkAuth } = useAuthStore();
+  const [dark, setDark] = useDarkMode();
 
   useEffect(() => {
     checkAuth();
@@ -65,6 +68,7 @@ const App: React.FC = () => {
   return (
     <Router>
       <div className="App">
+        {/* El toggle flotante de dark mode ha sido eliminado */}
         <Routes>
           {/* Rutas públicas */}
           <Route path="/" element={<Landing />} />
@@ -194,7 +198,7 @@ const App: React.FC = () => {
           />
 
           {/* Ruta por defecto */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
     </Router>

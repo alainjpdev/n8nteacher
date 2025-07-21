@@ -12,7 +12,7 @@ export const useAuthStore = create<AuthState>()(
       login: async (email: string, password: string) => {
         console.log('Intentando login en el store', email, password);
         try {
-          const res = await fetch('/api/login', {
+          const res = await fetch(`${import.meta.env.VITE_API_URL}/api/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
@@ -29,7 +29,7 @@ export const useAuthStore = create<AuthState>()(
 
       register: async (userData: RegisterData) => {
         try {
-          const res = await fetch('/api/register', {
+          const res = await fetch(`${import.meta.env.VITE_API_URL}/api/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(userData)

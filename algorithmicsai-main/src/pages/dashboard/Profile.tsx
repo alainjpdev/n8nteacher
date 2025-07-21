@@ -25,7 +25,7 @@ const Profile: React.FC = () => {
     setSuccess(false);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/users/${user.id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/${user.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -46,7 +46,7 @@ const Profile: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">{t('adminDashboard.profile', 'Perfil de Usuario')}</h1>
+      <h1 className="text-3xl font-bold text-text mb-6">{t('adminDashboard.profile', 'Perfil de Usuario')}</h1>
       <Card className="p-6 flex flex-col items-center">
         <form className="w-full max-w-md" onSubmit={handleSubmit}>
           <div className="flex flex-col items-center mb-4">
@@ -66,7 +66,7 @@ const Profile: React.FC = () => {
             />
           </div>
           <div className="mb-3">
-            <label className="block text-gray-700 font-medium mb-1">Nombre</label>
+            <label className="block text-text font-medium mb-1">Nombre</label>
             <input
               type="text"
               className="w-full border border-gray-300 rounded-lg px-3 py-2"
@@ -75,7 +75,7 @@ const Profile: React.FC = () => {
             />
           </div>
           <div className="mb-3">
-            <label className="block text-gray-700 font-medium mb-1">Apellido</label>
+            <label className="block text-text font-medium mb-1">Apellido</label>
             <input
               type="text"
               className="w-full border border-gray-300 rounded-lg px-3 py-2"
@@ -84,7 +84,7 @@ const Profile: React.FC = () => {
             />
           </div>
           <div className="mb-3">
-            <label className="block text-gray-700 font-medium mb-1">Email</label>
+            <label className="block text-text font-medium mb-1">Email</label>
             <input
               type="email"
               className="w-full border border-gray-300 rounded-lg px-3 py-2"
@@ -93,16 +93,16 @@ const Profile: React.FC = () => {
             />
           </div>
           <div className="mb-3">
-            <label className="block text-gray-700 font-medium mb-1">Rol</label>
+            <label className="block text-text font-medium mb-1">Rol</label>
             <input
               type="text"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 bg-gray-100 text-gray-500"
+              className="w-full border border-border rounded-lg px-3 py-2 bg-panel text-text-secondary"
               value={t('role.' + user.role, user.role)}
               disabled
             />
           </div>
           {user.createdAt && (
-            <p className="text-gray-400 mt-2 text-sm">{t('adminDashboard.registeredOn', 'Registrado el')}: {new Date(user.createdAt).toLocaleDateString()}</p>
+            <p className="text-text-secondary mt-2 text-sm">{t('adminDashboard.registeredOn', 'Registrado el')}: {new Date(user.createdAt).toLocaleDateString()}</p>
           )}
           {error && <p className="text-red-500 mt-2 text-sm">{error}</p>}
           {success && <p className="text-green-600 mt-2 text-sm">¡Perfil actualizado!</p>}

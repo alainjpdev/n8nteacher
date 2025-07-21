@@ -17,7 +17,7 @@ export const TeacherDashboard: React.FC = () => {
 
   useEffect(() => {
     // Obtener clases y filtrar por profesor (user.id)
-    fetch('/api/classes')
+    fetch(`${import.meta.env.VITE_API_URL}/api/classes`)
       .then(res => res.json())
       .then(data => {
         if (user?.id) {
@@ -27,7 +27,7 @@ export const TeacherDashboard: React.FC = () => {
         }
       });
     // Obtener tareas y filtrar por profesor (user.id)
-    fetch('/api/assignments')
+    fetch(`${import.meta.env.VITE_API_URL}/api/assignments`)
       .then(res => res.json())
       .then(data => {
         if (user?.id) {
@@ -40,7 +40,7 @@ export const TeacherDashboard: React.FC = () => {
 
   useEffect(() => {
     // Obtener clases del profesor
-    fetch('/api/classes')
+    fetch(`${import.meta.env.VITE_API_URL}/api/classes`)
       .then(res => res.json())
       .then(classesData => {
         if (user?.id) {
@@ -48,7 +48,7 @@ export const TeacherDashboard: React.FC = () => {
           const myClassIds = myClasses.map((cls: any) => cls.id);
 
           // Obtener inscripciones de estudiantes en mis clases
-          fetch('/api/studentclasses')
+          fetch(`${import.meta.env.VITE_API_URL}/api/studentclasses`)
             .then(res => res.json())
             .then(studentClassesData => {
               // Filtrar inscripciones solo de mis clases
@@ -83,10 +83,10 @@ export const TeacherDashboard: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-text">
             {t('teacherDashboard.greeting', { name: user?.firstName })}
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-text-secondary mt-1">
             {t('teacherDashboard.subtitle')}
           </p>
         </div>
@@ -100,24 +100,24 @@ export const TeacherDashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card className="text-center">
           <Calendar className="w-8 h-8 text-green-600 mx-auto mb-3" />
-          <h3 className="text-2xl font-bold text-gray-900">{myClasses.length}</h3>
+          <h3 className="text-2xl font-bold text-text">{myClasses.length}</h3>
           <p className="text-gray-600">{t('teacherDashboard.activeClasses')}</p>
         </Card>
         <Card className="text-center">
           <Users className="w-8 h-8 text-blue-600 mx-auto mb-3" />
-          <h3 className="text-2xl font-bold text-gray-900">
+          <h3 className="text-2xl font-bold text-text">
             {myClasses.reduce((total, cls) => total + cls.students, 0)}
           </h3>
           <p className="text-gray-600">{t('teacherDashboard.totalStudents')}</p>
         </Card>
         <Card className="text-center">
           <FileText className="w-8 h-8 text-orange-600 mx-auto mb-3" />
-          <h3 className="text-2xl font-bold text-gray-900">{pendingAssignments.length}</h3>
+          <h3 className="text-2xl font-bold text-text">{pendingAssignments.length}</h3>
           <p className="text-gray-600">{t('teacherDashboard.pendingAssignments')}</p>
         </Card>
         <Card className="text-center">
           <TrendingUp className="w-8 h-8 text-purple-600 mx-auto mb-3" />
-          <h3 className="text-2xl font-bold text-gray-900">87%</h3>
+          <h3 className="text-2xl font-bold text-text">87%</h3>
           <p className="text-gray-600">{t('teacherDashboard.avgSatisfaction')}</p>
         </Card>
       </div>
@@ -127,14 +127,14 @@ export const TeacherDashboard: React.FC = () => {
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">{t('teacherDashboard.myClasses')}</h2>
+              <h2 className="text-xl font-bold text-text">{t('teacherDashboard.myClasses')}</h2>
               <Button variant="outline" size="sm">{t('teacherDashboard.viewAll')}</Button>
             </div>
             <div className="space-y-4">
               {myClasses.map((cls) => (
                 <div key={cls.id} className="p-4 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-gray-900">{cls.title}</h3>
+                    <h3 className="font-semibold text-text">{cls.title}</h3>
                     <span className="text-sm text-gray-500">
                       {t('teacherDashboard.students', { current: cls.students, max: cls.maxStudents })}
                     </span>
@@ -147,7 +147,7 @@ export const TeacherDashboard: React.FC = () => {
                   <div className="mb-3">
                     <div className="flex items-center justify-between text-sm mb-1">
                       <span className="text-gray-600">{t('teacherDashboard.occupation')}</span>
-                      <span className="font-medium text-gray-900">
+                      <span className="font-medium text-gray-900 dark:text-gray-100">
                         {Math.round((cls.students / cls.maxStudents) * 100)}%
                       </span>
                     </div>
@@ -174,19 +174,19 @@ export const TeacherDashboard: React.FC = () => {
           {/* Tareas por Revisar */}
           <Card>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">{t('teacherDashboard.assignmentsToReview')}</h2>
+              <h2 className="text-xl font-bold text-text">{t('teacherDashboard.assignmentsToReview')}</h2>
               <Button variant="outline" size="sm">{t('teacherDashboard.viewAll')}</Button>
             </div>
             <div className="space-y-3">
               {pendingAssignments.map((assignment) => (
                 <div key={assignment.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                   <div>
-                    <h3 className="font-medium text-gray-900">{assignment.title}</h3>
+                    <h3 className="font-medium text-text">{assignment.title}</h3>
                     <p className="text-sm text-gray-600">{assignment.class}</p>
                     <p className="text-sm text-gray-500">{t('teacherDashboard.due', { date: assignment.dueDate })}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-semibold text-gray-900">
+                    <p className="text-lg font-semibold text-text">
                       {assignment.submissions}/{assignment.totalStudents}
                     </p>
                     <p className="text-sm text-gray-600">{t('teacherDashboard.delivered')}</p>
@@ -204,7 +204,7 @@ export const TeacherDashboard: React.FC = () => {
         <div className="space-y-6">
           {/* Estudiantes Recientes */}
           <Card>
-            <h2 className="text-xl font-bold text-gray-900 mb-4">{t('teacherDashboard.recentStudents')}</h2>
+            <h2 className="text-xl font-bold text-text mb-4">{t('teacherDashboard.recentStudents')}</h2>
             <div className="space-y-3">
               {recentStudents.map((student) => (
                 <div key={student.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -215,7 +215,7 @@ export const TeacherDashboard: React.FC = () => {
                       </span>
                     </div>
                     <div>
-                      <h3 className="font-medium text-gray-900 text-sm">{student.name}</h3>
+                      <h3 className="font-medium text-gray-900 dark:text-gray-100 text-sm">{student.name}</h3>
                       <p className="text-xs text-gray-600">{t('teacherDashboard.progress', { progress: student.progress })}</p>
                     </div>
                   </div>
@@ -229,7 +229,7 @@ export const TeacherDashboard: React.FC = () => {
 
           {/* Acciones Rápidas */}
           <Card>
-            <h2 className="text-xl font-bold text-gray-900 mb-4">{t('teacherDashboard.quickActions')}</h2>
+            <h2 className="text-xl font-bold text-text mb-4">{t('teacherDashboard.quickActions')}</h2>
             <div className="space-y-3">
               <Button size="sm" variant="outline" className="w-full justify-start">
                 <Plus className="w-4 h-4 mr-2" />

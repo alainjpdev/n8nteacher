@@ -9,7 +9,7 @@ const Assignments: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/assignments')
+    fetch(`${import.meta.env.VITE_API_URL}/api/assignments`)
       .then(res => res.json())
       .then(data => {
         setAssignments(data);
@@ -19,17 +19,17 @@ const Assignments: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">{t('adminDashboard.allAssignments', 'Todas las Tareas')}</h1>
+      <h1 className="text-3xl font-bold text-text mb-6">{t('adminDashboard.allAssignments', 'Todas las Tareas')}</h1>
       <Card>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
                 {/* <th className="text-left py-3 px-4 font-medium text-gray-700">ID</th> */}
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Título</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Descripción</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Clase</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Fecha Entrega</th>
+                <th className="text-left py-3 px-4 font-medium text-text">Título</th>
+                <th className="text-left py-3 px-4 font-medium text-text">Descripción</th>
+                <th className="text-left py-3 px-4 font-medium text-text">Clase</th>
+                <th className="text-left py-3 px-4 font-medium text-text">Fecha Entrega</th>
               </tr>
             </thead>
             <tbody>

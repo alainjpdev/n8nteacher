@@ -8,7 +8,7 @@ const StudentClasses: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/studentclasses')
+    fetch(`${import.meta.env.VITE_API_URL}/api/studentclasses`)
       .then(res => res.json())
       .then(data => {
         setStudentClasses(data);
@@ -18,17 +18,17 @@ const StudentClasses: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">{t('adminDashboard.studentClasses', 'Inscripciones de Estudiantes')}</h1>
+      <h1 className="text-3xl font-bold text-text mb-6">{t('adminDashboard.studentClasses', 'Inscripciones de Estudiantes')}</h1>
       <Card>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Estudiante</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Email</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Clase</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Estado</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Fecha de Inscripción</th>
+                <th className="text-left py-3 px-4 font-medium text-text">Estudiante</th>
+                <th className="text-left py-3 px-4 font-medium text-text">Email</th>
+                <th className="text-left py-3 px-4 font-medium text-text">Clase</th>
+                <th className="text-left py-3 px-4 font-medium text-text">Estado</th>
+                <th className="text-left py-3 px-4 font-medium text-text">Fecha de Inscripción</th>
               </tr>
             </thead>
             <tbody>

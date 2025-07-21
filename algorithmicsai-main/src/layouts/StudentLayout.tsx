@@ -4,11 +4,14 @@ import { useAuthStore } from '../store/authStore';
 import { BookOpen, Calendar, ClipboardList, User, LogOut, Home } from 'lucide-react';
 import LanguageSelector from '../components/ui/LanguageSelector';
 import { useTranslation } from 'react-i18next';
+import { useDarkMode } from '../hooks/useDarkMode';
+import { Moon, Sun } from 'lucide-react';
 
 export const StudentLayout: React.FC = () => {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const [dark, setDark] = useDarkMode();
 
   const handleLogout = () => {
     logout();
@@ -18,38 +21,43 @@ export const StudentLayout: React.FC = () => {
   const navigationItems = [
     { to: '/dashboard', icon: Home, label: t('dashboard') },
     { to: '/dashboard/modules', icon: BookOpen, label: t('modules') },
-    { to: '/dashboard/classes', icon: Calendar, label: t('classes') }
+    //{ to: '/dashboard/classes', icon: Calendar, label: t('classes') }
     // { to: '/dashboard/assignments', icon: ClipboardList, label: t('assignments') } // Eliminado para estudiantes
     // { to: '/dashboard/profile', icon: User, label: t('profile') } // Oculto para estudiantes
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-bg">
       {/* Sidebar */}
-      <div className="fixed inset-y-0 left-0 w-64 bg-white shadow-lg">
+      <div className="fixed inset-y-0 left-0 w-64 bg-sidebar shadow-lg border-r border-border">
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center px-6 py-4 border-b border-gray-200 justify-between">
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <BookOpen className="w-5 h-5 text-white" />
-              </div>
-              <span className="ml-2 text-xl font-bold text-gray-900">{t('appName')}</span>
+          <div className="flex items-center px-6 py-4 border-b border-border justify-between bg-sidebar">
+            <span className="ml-2 text-xl font-bold text-text">{t('appName')}</span>
+            <div className="flex items-center gap-2 ml-auto">
+              <LanguageSelector />
+              {/* Botón de dark mode oculto para estudiantes */}
+              {/* <button
+                onClick={() => setDark(d => !d)}
+                className="p-2 rounded-full bg-panel border border-border shadow hover:scale-110 transition flex items-center justify-center"
+                aria-label="Toggle dark mode"
+              >
+                {dark ? <Sun className="w-5 h-5 text-warning" /> : <Moon className="w-5 h-5 text-text-secondary" />}
+              </button> */}
             </div>
-            <LanguageSelector />
           </div>
 
           {/* User Info */}
-          <div className="px-6 py-4 border-b border-gray-200">
+          <div className="px-6 py-4 border-b border-border">
             <div className="flex items-center">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <User className="w-6 h-6 text-blue-600" />
+              <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
+                <User className="w-6 h-6 text-primary" />
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-sm font-medium text-text">
                   {user?.firstName} {user?.lastName}
                 </p>
-                <p className="text-xs text-gray-500 capitalize">{t('role.' + user?.role)}</p>
+                <p className="text-xs text-text-secondary capitalize">{t('role.' + user?.role)}</p>
               </div>
             </div>
           </div>
@@ -64,8 +72,8 @@ export const StudentLayout: React.FC = () => {
                 className={({ isActive }) =>
                   `flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                     isActive
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-text-secondary hover:bg-hover hover:text-text'
                   }`
                 }
               >
@@ -76,10 +84,10 @@ export const StudentLayout: React.FC = () => {
           </nav>
 
           {/* Logout */}
-          <div className="px-4 py-4 border-t border-gray-200">
+          <div className="px-4 py-4 border-t border-border">
             <button
               onClick={handleLogout}
-              className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors"
+              className="flex items-center w-full px-3 py-2 text-sm font-medium text-text-secondary hover:bg-border hover:text-text rounded-lg transition-colors"
             >
               <LogOut className="w-5 h-5 mr-3" />
               {t('logout')}
@@ -89,8 +97,9 @@ export const StudentLayout: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="ml-64">
+      <div className="ml-64 bg-bg min-h-screen">
         <main className="p-6">
+          {/* Fondo y textos actualizados a la nueva paleta */}
           <Outlet />
         </main>
       </div>

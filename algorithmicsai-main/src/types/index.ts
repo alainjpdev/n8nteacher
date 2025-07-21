@@ -6,6 +6,7 @@ export interface User {
   role: 'student' | 'teacher' | 'admin';
   avatar?: string;
   createdAt: string;
+  hours?: number;
 }
 
 export interface AuthState {

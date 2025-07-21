@@ -23,6 +23,8 @@ model User {
   status    String   @default("pending") // Estado del usuario
   notes     String?  // Notas internas
 
+  hours     Int      @default(0) // Nueva columna (en inglés)
+
   classesTaught   Class[]   @relation("TeacherClasses")
   modulesCreated  Module[]  @relation("ModuleCreator")
   enrollments     StudentClass[]

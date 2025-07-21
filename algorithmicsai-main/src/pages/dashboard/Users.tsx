@@ -3,6 +3,7 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
+import { apiClient } from '../../services/api';
 
 const Users: React.FC = () => {
   const { t } = useTranslation();
@@ -14,42 +15,29 @@ const Users: React.FC = () => {
   const { user: currentUser } = useAuthStore();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    fetch('/api/users', {
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
-      }
-    })
-      .then(res => res.json())
-      .then(data => {
-        setUsers(data);
+    apiClient.get('/api/users')
+      .then(res => {
+        setUsers(res.data);
         setLoading(false);
       });
   }, []);
+
+  useEffect(() => {
+    if (saveMsg && saveMsg.includes('guardados correctamente')) {
+      const timer = setTimeout(() => setSaveMsg(null), 7000);
+      return () => clearTimeout(timer);
+    }
+  }, [saveMsg]);
 
   const handleDelete = async (userId: string) => {
     if (!window.confirm('¿Seguro que quieres eliminar este usuario?')) return;
     setSaving(true);
     setSaveMsg(null);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`/api/users/${userId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        }
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        setSaveMsg(data.error || 'Error al eliminar usuario');
-        setSaving(false);
-        return;
-      }
+      await apiClient.delete(`/api/users/${userId}`);
       setUsers(users => users.filter(u => u.id !== userId));
       setSaveMsg('Usuario eliminado correctamente');
-    } catch (err) {
+    } catch (err: any) {
       setSaveMsg('Error al eliminar usuario');
     } finally {
       setSaving(false);
@@ -58,13 +46,12 @@ const Users: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">{t('adminDashboard.allUsers', 'Todos los Usuarios')}</h1>
+      <h1 className="text-3xl font-bold text-text mb-6">{t('adminDashboard.allUsers', 'Todos los Usuarios')}</h1>
       <div className="mb-4 flex items-center gap-4">
         <Button size="lg" variant="primary" disabled={saving || Object.keys(editUsers).length === 0} onClick={async () => {
           setSaving(true);
           setSaveMsg(null);
           try {
-            const token = localStorage.getItem('token');
             const updates = Object.entries(editUsers);
             for (const [userId, changes] of updates) {
               const c = changes as Record<string, any>;
@@ -72,63 +59,59 @@ const Users: React.FC = () => {
               const allowed: any = {};
               if ('status' in c) allowed.status = c.status;
               if ('notes' in c) allowed.notes = c.notes;
-              await fetch(`/api/users/${userId}`, {
-                method: 'PUT',
-                headers: {
-                  'Content-Type': 'application/json',
-                  ...(token ? { Authorization: `Bearer ${token}` } : {})
-                },
-                body: JSON.stringify(allowed)
-              });
+              if ('hours' in c) allowed.hours = c.hours;
+              const res = await apiClient.put(`/api/users/${userId}`, allowed);
+              const updatedUser = res.data;
               setUsers(users => users.map(u => u.id === userId ? { ...u, ...allowed } : u));
             }
             setEditUsers({});
             setSaveMsg('Cambios guardados correctamente');
-          } catch (err) {
-            setSaveMsg('Error al guardar cambios');
+          } catch (err: any) {
+            setSaveMsg(err.message || 'Error al guardar cambios');
           } finally {
             setSaving(false);
           }
         }}>Guardar cambios</Button>
-        {saveMsg && <span className={saveMsg.includes('Error') ? 'text-red-600' : 'text-green-600'}>{saveMsg}</span>}
+        {saveMsg && <span className={saveMsg.includes('Error') ? 'text-error' : 'text-success'}>{saveMsg}</span>}
       </div>
       <Card>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-200">
+              <tr className="border-b border-border">
                 {/* <th className="text-left py-3 px-4 font-medium text-gray-700">ID</th> */}
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Nombre</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Email</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Rol</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Estado</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Notas</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Fecha de Registro</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Eliminar</th>
+                <th className="text-left py-3 px-4 font-medium text-text-secondary">Nombre</th>
+                <th className="text-left py-3 px-4 font-medium text-text-secondary">Email</th>
+                <th className="text-left py-3 px-4 font-medium text-text-secondary">Rol</th>
+                <th className="text-left py-3 px-4 font-medium text-text-secondary">Estado</th>
+                <th className="text-left py-3 px-4 font-medium text-text-secondary">Notas</th>
+                <th className="text-left py-3 px-4 font-medium text-text-secondary">Horas</th>
+                <th className="text-left py-3 px-4 font-medium text-text-secondary">Fecha de Registro</th>
+                <th className="text-left py-3 px-4 font-medium text-text-secondary">Eliminar</th>
                 {/* <th className="text-left py-3 px-4 font-medium text-gray-700">Acciones</th> */}
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={6} className="py-6 text-center text-gray-500">{t('loading', 'Cargando...')}</td></tr>
+                <tr><td colSpan={6} className="py-6 text-center text-text-secondary">{t('loading', 'Cargando...')}</td></tr>
               ) : users.length === 0 ? (
-                <tr><td colSpan={6} className="py-6 text-center text-gray-500">{t('adminDashboard.noUsers', 'No hay usuarios')}</td></tr>
+                <tr><td colSpan={6} className="py-6 text-center text-text-secondary">{t('adminDashboard.noUsers', 'No hay usuarios')}</td></tr>
               ) : (
                 users.map(user => {
                   const local = editUsers[user.id] || {};
                   return (
-                    <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <tr key={user.id} className="border-b border-border hover:bg-panel">
                       {/* <td className="py-3 px-4">{user.id}</td> */}
                       <td className="py-3 px-4">{user.firstName} {user.lastName}</td>
                       <td className="py-3 px-4">{user.email}</td>
                       <td className="py-3 px-4 capitalize">{t('role.' + user.role, { defaultValue: user.role })}</td>
                       <td className="py-3 px-4">
                         <select
-                          className={`px-2 py-1 text-xs font-medium rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                            (local.status ?? user.status) === 'active' ? 'bg-green-100 text-green-800' :
-                            (local.status ?? user.status) === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                            (local.status ?? user.status) === 'suspended' ? 'bg-red-100 text-red-800' :
-                            'bg-gray-100 text-gray-800'
+                          className={`px-2 py-1 text-xs font-medium rounded-full focus:outline-none focus:ring-2 focus:ring-primary ${
+                            (local.status ?? user.status) === 'active' ? 'bg-success/10 text-success' :
+                            (local.status ?? user.status) === 'pending' ? 'bg-warning/10 text-warning' :
+                            (local.status ?? user.status) === 'suspended' ? 'bg-error/10 text-error' :
+                            'bg-border text-text-secondary'
                           }`}
                           value={local.status ?? user.status}
                           onChange={e => {
@@ -144,7 +127,7 @@ const Users: React.FC = () => {
                       <td className="py-3 px-4">
                         <input
                           type="text"
-                          className="w-full px-2 py-1 text-xs border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-2 py-1 text-xs border border-border bg-panel text-text rounded focus:outline-none focus:ring-2 focus:ring-primary"
                           placeholder="Notas internas"
                           value={local.notes ?? user.notes ?? ''}
                           onChange={e => {
@@ -153,7 +136,23 @@ const Users: React.FC = () => {
                           }}
                         />
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-600">{user.createdAt ? user.createdAt.split('T')[0] : ''}</td>
+                      <td className="py-3 px-4">
+                        {currentUser?.role === 'admin' ? (
+                          <input
+                            type="number"
+                            className="w-20 px-2 py-1 text-xs border border-border bg-panel text-text rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                            value={local.hours ?? user.hours ?? 0}
+                            min={0}
+                            onChange={e => {
+                              const hours = parseInt(e.target.value, 10) || 0;
+                              setEditUsers((edit: any) => ({ ...edit, [user.id]: { ...edit[user.id], hours } }));
+                            }}
+                          />
+                        ) : (
+                          user.hours ?? 0
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-sm text-text-secondary">{user.createdAt ? user.createdAt.split('T')[0] : ''}</td>
                       <td className="py-3 px-4">
                         <Button size="sm" variant="outline" onClick={() => handleDelete(user.id)} disabled={!!saving || !!(currentUser && currentUser.id === user.id)}>
                           Eliminar

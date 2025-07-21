@@ -13,7 +13,7 @@ const TeacherStudents: React.FC = () => {
     if (!user?.id) return;
 
     // 1. Obtener clases del profesor
-    fetch('/api/classes')
+    fetch(`${import.meta.env.VITE_API_URL}/api/classes`)
       .then(res => res.json())
       .then(classesData => {
         const myClassIds = classesData
@@ -21,7 +21,7 @@ const TeacherStudents: React.FC = () => {
           .map((cls: any) => cls.id);
 
         // 2. Obtener inscripciones de estudiantes en mis clases
-        fetch('/api/studentclasses')
+        fetch(`${import.meta.env.VITE_API_URL}/api/studentclasses`)
           .then(res => res.json())
           .then(studentClassesData => {
             // 3. Filtrar solo inscripciones de mis clases
@@ -36,7 +36,7 @@ const TeacherStudents: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">
+      <h1 className="text-3xl font-bold text-text mb-6">
         {t('teacherDashboard.manageStudents', 'Gestión de Estudiantes')}
       </h1>
       <Card>
@@ -44,10 +44,10 @@ const TeacherStudents: React.FC = () => {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Nombre</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Email</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Clase</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Fecha de Inscripción</th>
+                <th className="text-left py-3 px-4 font-medium text-text">Nombre</th>
+                <th className="text-left py-3 px-4 font-medium text-text">Email</th>
+                <th className="text-left py-3 px-4 font-medium text-text">Clase</th>
+                <th className="text-left py-3 px-4 font-medium text-text">Fecha de Inscripción</th>
               </tr>
             </thead>
             <tbody>
