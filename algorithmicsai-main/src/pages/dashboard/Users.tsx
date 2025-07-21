@@ -13,6 +13,10 @@ const Users: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const { user: currentUser } = useAuthStore();
+  const [modules, setModules] = useState<any[]>([]);
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  const [userModules, setUserModules] = useState<string[]>([]);
 
   useEffect(() => {
     apiClient.get('/api/users')
@@ -28,6 +32,39 @@ const Users: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [saveMsg]);
+
+  // Obtener todos los módulos al montar
+  useEffect(() => {
+    apiClient.get('/api/modules').then(res => setModules(res.data));
+  }, []);
+
+  const openAssignModal = async (user: any) => {
+    setSelectedUser(user);
+    setAssignModalOpen(true);
+    // Obtener módulos asignados al usuario
+    const res = await apiClient.get(`/api/users/${user.id}/modules`);
+    setUserModules(res.data.map((m: any) => m.id));
+  };
+
+  const closeAssignModal = () => {
+    setAssignModalOpen(false);
+    setSelectedUser(null);
+    setUserModules([]);
+  };
+
+  const handleToggleModule = (moduleId: string) => {
+    setUserModules(prev =>
+      prev.includes(moduleId)
+        ? prev.filter(id => id !== moduleId)
+        : [...prev, moduleId]
+    );
+  };
+
+  const handleSaveModules = async () => {
+    if (!selectedUser) return;
+    await apiClient.put(`/api/users/${selectedUser.id}/modules`, { moduleIds: userModules });
+    closeAssignModal();
+  };
 
   const handleDelete = async (userId: string) => {
     if (!window.confirm('¿Seguro que quieres eliminar este usuario?')) return;
@@ -102,7 +139,7 @@ const Users: React.FC = () => {
                   return (
                     <tr key={user.id} className="border-b border-border hover:bg-panel">
                       {/* <td className="py-3 px-4">{user.id}</td> */}
-                      <td className="py-3 px-4">{user.firstName} {user.lastName}</td>
+                      <td className="py-3 px-4 cursor-pointer text-primary underline" onClick={() => openAssignModal(user)}>{user.firstName} {user.lastName}</td>
                       <td className="py-3 px-4">{user.email}</td>
                       <td className="py-3 px-4 capitalize">{t('role.' + user.role, { defaultValue: user.role })}</td>
                       <td className="py-3 px-4">
@@ -171,6 +208,30 @@ const Users: React.FC = () => {
           </table>
         </div>
       </Card>
+      {assignModalOpen && selectedUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+          <div className="bg-panel rounded-lg shadow-2xl p-8 w-full max-w-md border border-border relative">
+            <button className="absolute top-2 right-2 text-text-secondary hover:text-text" onClick={closeAssignModal}>&times;</button>
+            <h2 className="text-2xl font-bold mb-4 text-text">Asignar módulos a {selectedUser.firstName} {selectedUser.lastName}</h2>
+            <div className="mb-4 space-y-2 max-h-64 overflow-y-auto">
+              {modules.map((mod) => (
+                <label key={mod.id} className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={userModules.includes(mod.id)}
+                    onChange={() => handleToggleModule(mod.id)}
+                  />
+                  <span className="text-text">{mod.title}</span>
+                </label>
+              ))}
+            </div>
+            <div className="flex gap-2 mt-4">
+              <Button size="sm" variant="primary" onClick={handleSaveModules}>Guardar</Button>
+              <Button size="sm" variant="outline" onClick={closeAssignModal}>Cancelar</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

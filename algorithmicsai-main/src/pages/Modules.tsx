@@ -3,6 +3,8 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '../services/api';
+import { DragDropContext, Droppable, Draggable, DropResult, DroppableProvided, DraggableProvided, DraggableStateSnapshot } from 'react-beautiful-dnd';
+import { useAuthStore } from '../store/authStore';
 
 const Modules: React.FC = () => {
   const { t } = useTranslation();
@@ -14,14 +16,26 @@ const Modules: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const { user } = useAuthStore();
+  const [allModules, setAllModules] = useState<any[]>([]); // Para todos los módulos
+  const [assignedModuleIds, setAssignedModuleIds] = useState<string[]>([]); // Solo ids asignados
 
   useEffect(() => {
-    apiClient.get('/api/modules')
-      .then(res => {
-        setModules(res.data);
-        setLoading(false);
-      });
-  }, []);
+    if (!user) return;
+    if (user.role === 'student') {
+      // Obtener todos los módulos
+      apiClient.get('/api/modules').then(res => setAllModules(res.data));
+      // Obtener módulos asignados
+      apiClient.get(`/api/users/${user.id}/modules`).then(res => setAssignedModuleIds(res.data.map((m: any) => m.id)));
+      setLoading(false);
+    } else {
+      apiClient.get('/api/modules')
+        .then(res => {
+          setModules(res.data);
+          setLoading(false);
+        });
+    }
+  }, [user]);
 
   const openModal = (module: any) => {
     setSelected(module);
@@ -100,46 +114,123 @@ const Modules: React.FC = () => {
     }
   };
 
+  // Función para reordenar el array
+  function reorder(list: any[], startIndex: number, endIndex: number) {
+    const result = Array.from(list);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
+    return result;
+  }
+
+  const onDragEnd = async (result: DropResult) => {
+    if (!result.destination) return;
+    const newOrder = reorder(modules, result.source.index, result.destination.index);
+    setModules(newOrder);
+    // Enviar el nuevo orden al backend
+    try {
+      await apiClient.put('/api/modules/reorder', {
+        orderedIds: newOrder.map(m => m.id)
+      });
+    } catch (err) {
+      // Manejar error (opcional: revertir el orden en el frontend)
+    }
+  };
+
+  const handleDeleteModule = async (id: string) => {
+    if (!window.confirm('¿Seguro que quieres eliminar este módulo?')) return;
+    try {
+      await apiClient.delete(`/api/modules/${id}`);
+      setModules(modules => modules.filter(m => m.id !== id));
+    } catch (err) {
+      alert('Error al eliminar el módulo');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold text-text mb-6 flex items-center justify-between">
         {t('adminDashboard.allModules', 'Todos los Módulos')}
-        <Button size="sm" variant="primary" onClick={openCreateModal}>{t('adminDashboard.createModule', 'Crear Módulo')}</Button>
+        {user?.role === 'admin' && (
+          <Button size="sm" variant="primary" onClick={openCreateModal}>{t('adminDashboard.createModule', 'Crear Módulo')}</Button>
+        )}
       </h1>
       <Card>
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border">
-                {/* <th className="text-left py-3 px-4 font-medium text-gray-700">ID</th> */}
-                <th className="text-left py-3 px-4 font-medium text-text-secondary">Título</th>
-                <th className="text-left py-3 px-4 font-medium text-text-secondary">Descripción</th>
-                <th className="text-left py-3 px-4 font-medium text-text-secondary">URL</th>
-                {/* <th className="text-left py-3 px-4 font-medium text-gray-700">Acciones</th> */}
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr><td colSpan={3} className="py-6 text-center text-text-secondary">{t('loading', 'Cargando...')}</td></tr>
-              ) : modules.length === 0 ? (
-                <tr><td colSpan={3} className="py-6 text-center text-text-secondary">{t('adminDashboard.noModules', 'No hay módulos')}</td></tr>
-              ) : (
-                modules.map(module => (
-                  <tr key={module.id} className="border-b border-border hover:bg-panel">
-                    {/* <td className="py-3 px-4">{module.id}</td> */}
-                    <td className="py-3 px-4">{module.title}</td>
-                    <td className="py-3 px-4">{module.description}</td>
-                    <td className="py-3 px-4">
-                      <a href={module.url} target="_blank" rel="noopener noreferrer" className="text-primary underline">{module.url}</a>
-                    </td>
-                    {/* <td className="py-3 px-4">
-                      <Button size="sm" variant="outline" onClick={() => openModal(module)}>{t('adminDashboard.manage', 'Gestionar')}</Button>
-                    </td> */}
-                  </tr>
-                ))
+          <DragDropContext onDragEnd={onDragEnd}>
+            <Droppable droppableId="modules-table">
+              {(provided: DroppableProvided) => (
+                <table className="w-full" ref={provided.innerRef} {...provided.droppableProps}>
+                  <thead>
+                    <tr className="border-b border-border">
+                      {/* <th className="text-left py-3 px-4 font-medium text-gray-700">ID</th> */}
+                      <th className="text-left py-3 px-4 font-medium text-text-secondary">Título</th>
+                      <th className="text-left py-3 px-4 font-medium text-text-secondary">Descripción</th>
+                      <th className="text-left py-3 px-4 font-medium text-text-secondary">URL</th>
+                      {/* <th className="text-left py-3 px-4 font-medium text-gray-700">Acciones</th> */}
+                      {user?.role === 'admin' && <th className="text-left py-3 px-4 font-medium text-text-secondary">Acciones</th>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loading ? (
+                      <tr><td colSpan={3} className="py-6 text-center text-text-secondary">{t('loading', 'Cargando...')}</td></tr>
+                    ) : user?.role === 'student' ? (
+                      allModules.length === 0 ? (
+                        <tr><td colSpan={3} className="py-6 text-center text-text-secondary">{t('adminDashboard.noModules', 'No hay módulos')}</td></tr>
+                      ) : (
+                        allModules.map((module: any, index: number) => {
+                          const isActive = assignedModuleIds.includes(module.id);
+                          return (
+                            <tr key={module.id} className={`border-b border-border ${!isActive ? 'opacity-60' : ''}`}> 
+                              <td className="py-3 px-4">{module.title}</td>
+                              <td className="py-3 px-4">{module.description}</td>
+                              <td className="py-3 px-4">
+                                {isActive ? (
+                                  <a href={module.url} target="_blank" rel="noopener noreferrer" className="text-primary underline">{module.url}</a>
+                                ) : (
+                                  <span className="text-text-secondary cursor-not-allowed select-none">{module.url}</span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )
+                    ) : (
+                      modules.length === 0 ? (
+                        <tr><td colSpan={3} className="py-6 text-center text-text-secondary">{t('adminDashboard.noModules', 'No hay módulos')}</td></tr>
+                      ) : (
+                        modules.map((module, index) => (
+                          <Draggable key={module.id} draggableId={module.id} index={index}>
+                            {(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
+                              <tr
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                className={`border-b border-border hover:bg-panel ${snapshot.isDragging ? 'bg-primary/10' : ''}`}
+                              >
+                                {/* <td className="py-3 px-4">{module.id}</td> */}
+                                <td className="py-3 px-4">{module.title}</td>
+                                <td className="py-3 px-4">{module.description}</td>
+                                <td className="py-3 px-4">
+                                  <a href={module.url} target="_blank" rel="noopener noreferrer" className="text-primary underline">{module.url}</a>
+                                </td>
+                                {user?.role === 'admin' && (
+                                  <td className="py-3 px-4 flex gap-2">
+                                    <Button size="sm" variant="outline" onClick={() => openModal(module)}>Editar</Button>
+                                    <Button size="sm" variant="danger" onClick={() => handleDeleteModule(module.id)}>Eliminar</Button>
+                                  </td>
+                                )}
+                              </tr>
+                            )}
+                          </Draggable>
+                        ))
+                      )
+                    )}
+                    {provided.placeholder}
+                  </tbody>
+                </table>
               )}
-            </tbody>
-          </table>
+            </Droppable>
+          </DragDropContext>
         </div>
       </Card>
 

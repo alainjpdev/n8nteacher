@@ -4,18 +4,26 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { useAuthStore } from '../../store/authStore';
 import { useTranslation } from 'react-i18next';
+import { apiClient } from '../../services/api';
 
 export const StudentDashboard: React.FC = () => {
   const { user } = useAuthStore();
   const { t } = useTranslation();
   const [modules, setModules] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [assignments, setAssignments] = useState<any[]>([]);
   // Puedes agregar loading y error states si lo deseas
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/api/modules`)
-      .then(res => res.json())
-      .then(setModules);
+    if (!user) return;
+    apiClient.get(`/api/users/${user.id}/modules`)
+      .then(res => {
+        setModules(res.data);
+        setLoading(false);
+      });
+  }, [user]);
+
+  useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/api/assignments`)
       .then(res => res.json())
       .then(setAssignments);
