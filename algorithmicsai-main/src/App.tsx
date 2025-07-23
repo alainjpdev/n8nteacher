@@ -26,6 +26,7 @@ import StudentClasses from './pages/dashboard/StudentClasses';
 import Settings from './pages/dashboard/Settings';
 import Profile from './pages/dashboard/Profile';
 import NotFound from './pages/NotFound';
+import Notion from './pages/dashboard/Notion';
 
 // Layout wrapper component
 const DashboardLayoutWrapper: React.FC = () => {
@@ -173,6 +174,14 @@ const App: React.FC = () => {
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
                   <StudentClasses />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="notion" 
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <Notion />
                 </ProtectedRoute>
               } 
             />

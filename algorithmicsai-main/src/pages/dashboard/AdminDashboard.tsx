@@ -4,6 +4,7 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { useAuthStore } from '../../store/authStore';
 import { useTranslation } from 'react-i18next';
+import NotionTasksTable from './NotionTasksTable';
 
 export const AdminDashboard: React.FC = () => {
   const { user } = useAuthStore();
@@ -141,14 +142,14 @@ export const AdminDashboard: React.FC = () => {
           </p>
         </div>
         <div className="flex space-x-3">
-          <Button variant="outline">
+          {/* <Button variant="outline">
             <Settings className="w-5 h-5 mr-2" />
             {t('adminDashboard.settings')}
-          </Button>
-          <Button>
+          </Button> */}
+          {/* <Button>
             <UserPlus className="w-5 h-5 mr-2" />
             {t('adminDashboard.newUser')}
-          </Button>
+          </Button> */}
         </div>
       </div>
 
@@ -198,22 +199,22 @@ export const AdminDashboard: React.FC = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 font-medium text-text">ID</th>
+                    {/* <th className="text-left py-3 px-4 font-medium text-text">ID</th> */}
                     <th className="text-left py-3 px-4 font-medium text-text">Usuario</th>
                     <th className="text-left py-3 px-4 font-medium text-text">Rol</th>
                     <th className="text-left py-3 px-4 font-medium text-text">Estado</th>
                     <th className="text-left py-3 px-4 font-medium text-text">Fecha de Ingreso</th>
-                    <th className="text-left py-3 px-4 font-medium text-text">Acciones</th>
+                    {/* <th className="text-left py-3 px-4 font-medium text-text">Acciones</th> */}
                   </tr>
                 </thead>
                 <tbody>
                   {recentUsers.map((user) => (
                     <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-3 px-4">{user.id}</td>
+                      {/* <td className="py-3 px-4">{user.id}</td> */}
                       <td className="py-3 px-4">
                         <div>
-                          <p className="font-medium text-gray-900 dark:text-gray-100">{user.name}</p>
-                          <p className="text-sm text-gray-600">{user.email}</p>
+                          <p className="font-medium text-gray-700">{user.name}</p>
+                          <p className="text-sm text-gray-400">{user.email}</p>
                         </div>
                       </td>
                       <td className="py-3 px-4">
@@ -234,12 +235,12 @@ export const AdminDashboard: React.FC = () => {
                           {user.status === 'active' ? t('adminDashboard.active') : t('adminDashboard.pending')}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-600">{user.joinDate}</td>
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-4 text-sm text-gray-400">{user.joinDate}</td>
+                      {/* <td className="py-3 px-4">
                         <Button size="sm" variant="outline">
                           {t('adminDashboard.manage')}
                         </Button>
-                      </td>
+                      </td> */}
                     </tr>
                   ))}
                 </tbody>
@@ -296,8 +297,8 @@ export const AdminDashboard: React.FC = () => {
                     alert.type === 'info' ? 'text-blue-600' : 'text-green-600'
                   }`} />
                   <div className="flex-1">
-                    <p className="text-sm text-gray-900">{alert.message}</p>
-                    <p className="text-xs text-gray-500 mt-1">{t('adminDashboard.ago', { time: alert.timestamp })}</p>
+                    <p className="text-sm text-gray-400">{alert.message}</p>
+                    <p className="text-xs text-gray-400 mt-1">{t('adminDashboard.ago', { time: alert.timestamp })}</p>
                   </div>
                 </div>
               ))}
@@ -349,6 +350,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </Card>
 
+          {/*
           <Card className="mt-8">
             <h2 className="text-xl font-bold text-text mb-4">{t('adminDashboard.allClasses', 'Todas las Clases')}</h2>
             <div className="overflow-x-auto">
@@ -360,7 +362,6 @@ export const AdminDashboard: React.FC = () => {
                     <th className="text-left py-3 px-4 font-medium text-text">Descripción</th>
                     <th className="text-left py-3 px-4 font-medium text-text">Módulo</th>
                     <th className="text-left py-3 px-4 font-medium text-text">Profesor</th>
-                    {/* <th className="text-left py-3 px-4 font-medium text-gray-700">Horario</th> */}
                   </tr>
                 </thead>
                 <tbody>
@@ -384,7 +385,6 @@ export const AdminDashboard: React.FC = () => {
                           ))}
                         </select>
                       </td>
-                      {/* <td className="py-3 px-4">{cls.schedule}</td> */}
                     </tr>
                   ))}
                 </tbody>
@@ -392,30 +392,8 @@ export const AdminDashboard: React.FC = () => {
             </div>
             {saveMsg && <div className={saveMsg.includes('Error') ? 'text-red-600 mt-2' : 'text-green-600 mt-2'}>{saveMsg}</div>}
           </Card>
+          */}
 
-          <Card className="mt-8">
-            <h2 className="text-xl font-bold text-text mb-4">{t('adminDashboard.allModules', 'Todos los Módulos')}</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 font-medium text-text">ID</th>
-                    <th className="text-left py-3 px-4 font-medium text-text">Título</th>
-                    <th className="text-left py-3 px-4 font-medium text-text">Descripción</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {modules.map(module => (
-                    <tr key={module.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-3 px-4">{module.id}</td>
-                      <td className="py-3 px-4">{module.title}</td>
-                      <td className="py-3 px-4">{module.description}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
           <Card className="mt-8">
             <h2 className="text-xl font-bold text-text mb-4">{t('adminDashboard.allAssignments', 'Todas las Tareas')}</h2>
             <div className="overflow-x-auto">
@@ -444,6 +422,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </Card>
         </div>
+        {/* <NotionTasksTable /> */}
       </div>
     </div>
   );

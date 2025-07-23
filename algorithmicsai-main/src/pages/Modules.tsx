@@ -5,9 +5,10 @@ import { useTranslation } from 'react-i18next';
 import { apiClient } from '../services/api';
 import { DragDropContext, Droppable, Draggable, DropResult, DroppableProvided, DraggableProvided, DraggableStateSnapshot } from 'react-beautiful-dnd';
 import { useAuthStore } from '../store/authStore';
+import useAutoTranslate from '../hooks/useAutoTranslate';
 
 const Modules: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [modules, setModules] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<any | null>(null);
@@ -19,6 +20,14 @@ const Modules: React.FC = () => {
   const { user } = useAuthStore();
   const [allModules, setAllModules] = useState<any[]>([]); // Para todos los módulos
   const [assignedModuleIds, setAssignedModuleIds] = useState<string[]>([]); // Solo ids asignados
+  // Estado para el modal de assignment
+  const [assignmentModal, setAssignmentModal] = useState<{ open: boolean; moduleId: string | null }>({ open: false, moduleId: null });
+  const [assignmentText, setAssignmentText] = useState('');
+  const [assignmentSaved, setAssignmentSaved] = useState(false);
+  const [assignmentLoading, setAssignmentLoading] = useState(false);
+  const [assignmentError, setAssignmentError] = useState<string | null>(null);
+  // Simulación de assignments guardados por módulo (en memoria + backend)
+  const [userAssignments, setUserAssignments] = useState<{ [moduleId: string]: string }>({});
 
   useEffect(() => {
     if (!user) return;
@@ -146,59 +155,188 @@ const Modules: React.FC = () => {
     }
   };
 
+  const API_URL = import.meta.env.VITE_API_URL || 'https://algorithmicsai-backend-waves-d55c2136336f.herokuapp.com';
+  const handleOpenAssignment = async (moduleId: string) => {
+    if (!user) return;
+    setAssignmentLoading(true);
+    setAssignmentError(null);
+    setAssignmentText('');
+    setAssignmentModal({ open: true, moduleId });
+    setAssignmentSaved(false);
+    try {
+      console.log('GET assignment', { userId: user.id, moduleId });
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/assignment-module?userId=${user.id}&moduleId=${moduleId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        }
+      });
+      if (!res.ok) throw new Error('Error al obtener assignment');
+      const data = await res.json();
+      console.log('GET assignment response:', data);
+      setAssignmentText(data?.content || '');
+      setUserAssignments(prev => ({ ...prev, [moduleId]: data?.content || '' }));
+    } catch (err) {
+      console.log('GET assignment error:', err);
+      setAssignmentError('No se pudo cargar el assignment.');
+    } finally {
+      setAssignmentLoading(false);
+    }
+  };
+  const handleCloseAssignment = () => {
+    setAssignmentModal({ open: false, moduleId: null });
+    setAssignmentText('');
+    setAssignmentSaved(false);
+    setAssignmentError(null);
+  };
+  const handleSaveAssignment = async () => {
+    if (!assignmentModal.moduleId || !user) return;
+    setAssignmentLoading(true);
+    setAssignmentError(null);
+    try {
+      console.log('POST assignment', { userId: user.id, moduleId: assignmentModal.moduleId, content: assignmentText });
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/assignment-module`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          moduleId: assignmentModal.moduleId,
+          content: assignmentText
+        })
+      });
+      if (!res.ok) throw new Error('Error al guardar assignment');
+      const data = await res.json();
+      console.log('POST assignment response:', data);
+      setUserAssignments(prev => ({ ...prev, [assignmentModal.moduleId!]: assignmentText }));
+      setAssignmentSaved(true);
+      setTimeout(() => {
+        setAssignmentSaved(false);
+        setUserAssignments(prev => {
+          const updated = { ...prev };
+          delete updated[assignmentModal.moduleId!];
+          return updated;
+        });
+        setTimeout(() => {
+          handleCloseAssignment();
+        }, 500);
+      }, 1500);
+    } catch (err) {
+      console.log('POST assignment error:', err);
+      setAssignmentError('No se pudo guardar el assignment.');
+    } finally {
+      setAssignmentLoading(false);
+    }
+  };
+
+  const TranslatedModuleCard: React.FC<{ module: any; i18n: any; isActive: boolean }> = ({ module, i18n, isActive }) => {
+    const translatedTitle = useAutoTranslate(module.title, 'es', i18n.language);
+    const translatedDescription = useAutoTranslate(module.description, 'es', i18n.language);
+    return (
+      <div
+        className={`bg-panel border border-border rounded-xl shadow-md overflow-hidden flex flex-col ${!isActive ? 'opacity-60' : ''}`}
+      >
+        <img
+          src="https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=80"
+          alt="Imagen del módulo"
+          className="w-full h-[150px] object-cover"
+        />
+        <div className="p-4 flex-1 flex flex-col justify-between">
+          <div>
+            <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-1 rounded-full inline-block mb-2">
+              ARTIFICIAL INTELLIGENCE
+            </span>
+            <h3 className="text-lg font-bold text-text mb-1">{translatedTitle}</h3>
+            <p className="text-sm text-text-secondary mb-2">{translatedDescription}</p>
+            <p className="text-xs text-text-secondary">Grades: 3–6</p>
+            <p className="text-xs text-text-secondary mb-4">Duration: Lesson</p>
+          </div>
+          <div className="flex gap-2 mt-4">
+            {isActive ? (
+              <>
+                <a
+                  href={module.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-primary text-white font-medium text-sm py-2 px-4 rounded hover:bg-primary/80 transition"
+                >
+                  Let’s Go
+                </a>
+                <button
+                  type="button"
+                  className="font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 border-2 border-primary text-primary hover:bg-bg focus:ring-primary px-3 py-1.5 text-sm"
+                  onClick={() => handleOpenAssignment(module.id)}
+                >
+                  Assignment
+                </button>
+              </>
+            ) : (
+              <button
+                className="mt-auto bg-gray-400 text-white font-medium text-sm py-2 px-4 rounded cursor-not-allowed"
+                disabled
+              >
+                Not Assigned
+              </button>
+            )}
+          </div>
+          {userAssignments[module.id] && (
+            <div className="mt-2 text-xs text-success">Assignment guardado</div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-text mb-6 flex items-center justify-between">
-        {t('adminDashboard.allModules', 'Todos los Módulos')}
-        {user?.role === 'admin' && (
-          <Button size="sm" variant="primary" onClick={openCreateModal}>{t('adminDashboard.createModule', 'Crear Módulo')}</Button>
-        )}
-      </h1>
-      <Card>
-        <div className="overflow-x-auto">
-          <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable droppableId="modules-table">
-              {(provided: DroppableProvided) => (
-                <table className="w-full" ref={provided.innerRef} {...provided.droppableProps}>
-                  <thead>
-                    <tr className="border-b border-border">
-                      {/* <th className="text-left py-3 px-4 font-medium text-gray-700">ID</th> */}
-                      <th className="text-left py-3 px-4 font-medium text-text-secondary">Título</th>
-                      <th className="text-left py-3 px-4 font-medium text-text-secondary">Descripción</th>
-                      <th className="text-left py-3 px-4 font-medium text-text-secondary">URL</th>
-                      {/* <th className="text-left py-3 px-4 font-medium text-gray-700">Acciones</th> */}
-                      {user?.role === 'admin' && <th className="text-left py-3 px-4 font-medium text-text-secondary">Acciones</th>}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {loading ? (
-                      <tr><td colSpan={3} className="py-6 text-center text-text-secondary">{t('loading', 'Cargando...')}</td></tr>
-                    ) : user?.role === 'student' ? (
-                      allModules.length === 0 ? (
-                        <tr><td colSpan={3} className="py-6 text-center text-text-secondary">{t('adminDashboard.noModules', 'No hay módulos')}</td></tr>
-                      ) : (
-                        allModules.map((module: any, index: number) => {
-                          const isActive = assignedModuleIds.includes(module.id);
-                          return (
-                            <tr key={module.id} className={`border-b border-border ${!isActive ? 'opacity-60' : ''}`}> 
-                              <td className="py-3 px-4">{module.title}</td>
-                              <td className="py-3 px-4">{module.description}</td>
-                              <td className="py-3 px-4">
-                                {isActive ? (
-                                  <a href={module.url} target="_blank" rel="noopener noreferrer" className="text-primary underline">{module.url}</a>
-                                ) : (
-                                  <span className="text-text-secondary cursor-not-allowed select-none">{module.url}</span>
-                                )}
-                              </td>
-                            </tr>
-                          );
-                        })
-                      )
-                    ) : (
-                      modules.length === 0 ? (
-                        <tr><td colSpan={3} className="py-6 text-center text-text-secondary">{t('adminDashboard.noModules', 'No hay módulos')}</td></tr>
-                      ) : (
-                        modules.map((module, index) => (
+    <>
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold text-text mb-6 flex items-center justify-between">
+          {t('adminDashboard.allModules', 'Todos los Módulos')}
+          {user?.role === 'admin' && (
+            <Button size="sm" variant="primary" onClick={openCreateModal}>
+              {t('adminDashboard.createModule', 'Crear Módulo')}
+            </Button>
+          )}
+        </h1>
+    
+        {loading ? (
+          <p className="text-center text-text-secondary py-10">{t('loading', 'Cargando...')}</p>
+        ) : user?.role === 'student' ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {allModules.length === 0 ? (
+              <p className="text-center text-text-secondary col-span-full">
+                {t('adminDashboard.noModules', 'No hay módulos')}
+              </p>
+            ) : (
+              allModules.map((module) => {
+                const isActive = assignedModuleIds.includes(module.id);
+                return (
+                  <TranslatedModuleCard key={module.id} module={module} i18n={i18n} isActive={isActive} />
+                );
+              })
+            )}
+          </div>
+        ) : (
+          <Card>
+            <div className="overflow-x-auto">
+              <DragDropContext onDragEnd={onDragEnd}>
+                <Droppable droppableId="modules-table">
+                  {(provided: DroppableProvided) => (
+                    <table className="w-full" ref={provided.innerRef} {...provided.droppableProps}>
+                      <thead>
+                        <tr className="border-b border-border">
+                          <th className="text-left py-3 px-4 font-medium text-text-secondary">Título</th>
+                          <th className="text-left py-3 px-4 font-medium text-text-secondary">Descripción</th>
+                          <th className="text-left py-3 px-4 font-medium text-text-secondary">URL</th>
+                          <th className="text-left py-3 px-4 font-medium text-text-secondary">Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {modules.map((module, index) => (
                           <Draggable key={module.id} draggableId={module.id} index={index}>
                             {(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
                               <tr
@@ -207,74 +345,94 @@ const Modules: React.FC = () => {
                                 {...provided.dragHandleProps}
                                 className={`border-b border-border hover:bg-panel ${snapshot.isDragging ? 'bg-primary/10' : ''}`}
                               >
-                                {/* <td className="py-3 px-4">{module.id}</td> */}
                                 <td className="py-3 px-4">{module.title}</td>
                                 <td className="py-3 px-4">{module.description}</td>
                                 <td className="py-3 px-4">
                                   <a href={module.url} target="_blank" rel="noopener noreferrer" className="text-primary underline">{module.url}</a>
                                 </td>
-                                {user?.role === 'admin' && (
-                                  <td className="py-3 px-4 flex gap-2">
-                                    <Button size="sm" variant="outline" onClick={() => openModal(module)}>Editar</Button>
-                                    <Button size="sm" variant="danger" onClick={() => handleDeleteModule(module.id)}>Eliminar</Button>
-                                  </td>
-                                )}
+                                <td className="py-3 px-4 flex gap-2">
+                                  <Button size="sm" variant="outline" onClick={() => openModal(module)}>Editar</Button>
+                                  <Button size="sm" variant="danger" onClick={() => handleDeleteModule(module.id)}>Eliminar</Button>
+                                </td>
                               </tr>
                             )}
                           </Draggable>
-                        ))
-                      )
-                    )}
-                    {provided.placeholder}
-                  </tbody>
-                </table>
-              )}
-            </Droppable>
-          </DragDropContext>
-        </div>
-      </Card>
-
-      {/* Modal de gestión de módulo */}
+                        ))}
+                        {provided.placeholder}
+                      </tbody>
+                    </table>
+                  )}
+                </Droppable>
+              </DragDropContext>
+            </div>
+          </Card>
+        )}
+      </div>
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
           <div className="bg-panel rounded-lg shadow-2xl p-8 w-full max-w-md border border-border relative">
             <button className="absolute top-2 right-2 text-text-secondary hover:text-text" onClick={closeModal}>&times;</button>
-            <h2 className="text-2xl font-bold mb-4 text-text">{selected ? 'Gestionar Módulo' : 'Crear Módulo'}</h2>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-text-secondary mb-1">Título</label>
-              <input type="text" className="w-full border border-border rounded px-3 py-2 bg-panel text-text focus:outline-none focus:ring-2 focus:ring-primary" value={edit.title} onChange={e => setEdit(edit => ({ ...edit, title: e.target.value }))} />
+            <h2 className="text-2xl font-bold mb-4 text-text">{selected ? 'Editar Módulo' : 'Crear Módulo'}</h2>
+            <div className="mb-4 space-y-2">
+              <input
+                type="text"
+                className="w-full border border-border rounded-lg px-3 py-2 mb-2"
+                placeholder="Título"
+                value={edit.title}
+                onChange={e => setEdit({ ...edit, title: e.target.value })}
+              />
+              <textarea
+                className="w-full border border-border rounded-lg px-3 py-2 mb-2"
+                placeholder="Descripción"
+                value={edit.description}
+                onChange={e => setEdit({ ...edit, description: e.target.value })}
+              />
+              <input
+                type="text"
+                className="w-full border border-border rounded-lg px-3 py-2"
+                placeholder="URL"
+                value={edit.url}
+                onChange={e => setEdit({ ...edit, url: e.target.value })}
+              />
             </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-text-secondary mb-1">Descripción</label>
-              <textarea className="w-full border border-border rounded px-3 py-2 bg-panel text-text focus:outline-none focus:ring-2 focus:ring-primary" value={edit.description} onChange={e => setEdit(edit => ({ ...edit, description: e.target.value }))} />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-text-secondary mb-1">URL</label>
-              <input type="text" className="w-full border border-border rounded px-3 py-2 bg-panel text-text focus:outline-none focus:ring-2 focus:ring-primary" value={edit.url} onChange={e => setEdit(edit => ({ ...edit, url: e.target.value }))} />
-            </div>
-            {selected && (
-              <div className="mb-4 text-sm text-text-secondary">
-                <strong>ID:</strong> {selected.id}<br />
-                <strong>Creado:</strong> {selected.createdAt || 'N/A'}
-              </div>
-            )}
-            {error && <div className="text-error mb-2">{error}</div>}
-            {successMsg && <div className="text-success mb-2">{successMsg}</div>}
-            <div className="flex gap-2">
-              {selected ? (
-                <>
-                  <Button size="sm" variant="primary" onClick={handleSave} disabled={saving}>{saving ? 'Guardando...' : 'Guardar'}</Button>
-                  <Button size="sm" variant="outline" onClick={handleDelete} disabled={saving}>Eliminar</Button>
-                </>
-              ) : (
-                <Button size="sm" variant="primary" onClick={handleCreate} disabled={saving}>{saving ? 'Creando...' : 'Crear'}</Button>
-              )}
-              <Button size="sm" variant="outline" onClick={closeModal}>Cancelar</Button>
+            {error && <div className="text-red-500 mb-2">{error}</div>}
+            {successMsg && <div className="text-green-600 mb-2">{successMsg}</div>}
+            <div className="flex gap-2 mt-4">
+              <Button size="sm" variant="primary" onClick={selected ? handleSave : handleCreate} disabled={saving}>
+                {selected ? 'Guardar' : 'Crear'}
+              </Button>
+              <Button size="sm" variant="outline" onClick={closeModal} disabled={saving}>Cancelar</Button>
             </div>
           </div>
         </div>
       )}
-    </div>
+      {/* Modal de Assignment */}
+      {assignmentModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+          <div className="bg-panel rounded-lg shadow-2xl p-8 w-full max-w-md border border-border relative">
+            <button className="absolute top-2 right-2 text-text-secondary hover:text-text" onClick={handleCloseAssignment}>&times;</button>
+            <h2 className="text-2xl font-bold mb-4 text-text">Assignment del Módulo</h2>
+            <textarea
+              className="w-full border border-border rounded-lg px-3 py-2 mb-2"
+              placeholder="Pega aquí tu link o escribe tu texto..."
+              value={assignmentText}
+              onChange={e => setAssignmentText(e.target.value)}
+              rows={4}
+              disabled={assignmentLoading}
+            />
+            {assignmentLoading && <div className="text-blue-600 mb-2">Cargando...</div>}
+            {assignmentSaved && <div className="text-green-600 mb-2">¡Assignment guardado!</div>}
+            {assignmentError && <div className="text-red-500 mb-2">{assignmentError}</div>}
+            <div className="flex gap-2 mt-4">
+              <Button size="sm" variant="primary" onClick={handleSaveAssignment} disabled={assignmentLoading}>
+                Guardar
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleCloseAssignment} disabled={assignmentLoading}>Cancelar</Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

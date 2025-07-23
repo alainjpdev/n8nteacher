@@ -10,7 +10,7 @@ import { Moon, Sun } from 'lucide-react';
 export const StudentLayout: React.FC = () => {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [dark, setDark] = useDarkMode();
 
   const handleLogout = () => {
@@ -100,7 +100,7 @@ export const StudentLayout: React.FC = () => {
       <div className="ml-64 bg-bg min-h-screen">
         <main className="p-6">
           {/* Fondo y textos actualizados a la nueva paleta */}
-          <Outlet />
+          <Outlet key={i18n.language} />
         </main>
       </div>
     </div>
