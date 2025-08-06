@@ -33,6 +33,23 @@ class N8nMonitorService {
     this.statusCallback = callback;
   }
 
+  // Update API configuration
+  updateApiConfig(config) {
+    this.log(`🔧 Actualizando configuración de API`, 'info');
+    this.log(`   📡 URL base: ${config.n8nBaseUrl || config.baseUrl}`, 'info');
+    this.log(`   🔑 Token: ${(config.n8nApiToken || config.token)?.substring(0, 20)}...`, 'info');
+    
+    // Send API config to backend via HTTP
+    this.api.post('/config/update', {
+      n8nBaseUrl: config.n8nBaseUrl || config.baseUrl,
+      n8nApiToken: config.n8nApiToken || config.token
+    }).then(() => {
+      this.log('✅ Configuración enviada al servidor', 'success');
+    }).catch(error => {
+      this.log(`❌ Error enviando configuración: ${error.message}`, 'error');
+    });
+  }
+
   // Generate workflow hash
   generateWorkflowHash(workflow) {
     const content = JSON.stringify({

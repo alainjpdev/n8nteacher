@@ -45,9 +45,9 @@ app.use((req, res, next) => {
   }
 });
 
-// n8n Configuration
-const N8N_BASE_URL = 'http://localhost:5678/api/v1';
-const N8N_API_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZjkxNGRjYy1jZjZkLTQyYTgtYjEwNy00MWVhY2FkMDU2MmIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU0NDE2NjQzLCJleHAiOjE3NTY5NTg0MDB9.3x0inedA6Kqf74uMTHt8teRZoKFRmPS2WzA58y09YbI';
+// n8n Configuration (default values, will be updated dynamically)
+global.N8N_BASE_URL = 'http://localhost:5678/api/v1';
+global.N8N_API_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZjkxNGRjYy1jZjZkLTQyYTgtYjEwNy00MWVhY2FkMDU2MmIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU0NDE2NjQzLCJleHAiOjE3NTY5NTg0MDB9.3x0inedA6Kqf74uMTHt8teRZoKFRmPS2WzA58y09YbI';
 
 // Configuración de monitoreo específico
 let TARGET_WORKFLOW_ID = 'FVKBIatFo5HXrLs7'; // ID del workflow "Agente para Principiantes"
@@ -95,9 +95,9 @@ function generateWorkflowHash(workflow) {
 // Check for workflow content changes
 async function checkWorkflowContentChanges(workflowId) {
   try {
-    const response = await axios.get(`${N8N_BASE_URL}/workflows/${workflowId}`, {
+    const response = await axios.get(`${global.N8N_BASE_URL}/workflows/${workflowId}`, {
       headers: {
-        'X-N8N-API-KEY': N8N_API_TOKEN,
+        'X-N8N-API-KEY': global.N8N_API_TOKEN,
         'Content-Type': 'application/json'
       }
     });
@@ -172,9 +172,9 @@ async function testN8nConnectivity() {
     
     // Test API endpoint with authentication
     try {
-      const apiResponse = await axios.get(`${N8N_BASE_URL}/workflows`, {
+      const apiResponse = await axios.get(`${global.N8N_BASE_URL}/workflows`, {
         headers: {
-          'X-N8N-API-KEY': N8N_API_TOKEN,
+          'X-N8N-API-KEY': global.N8N_API_TOKEN,
           'Content-Type': 'application/json'
         },
         timeout: 10000
@@ -240,11 +240,11 @@ async function checkN8nChanges() {
     } else {
       // Monitoreo general de todos los workflows
       log('info', 'Verificando cambios en workflows...');
-      log('info', `URL de n8n: ${N8N_BASE_URL}`);
+      log('info', `URL de n8n: ${global.N8N_BASE_URL}`);
       
-      const workflowsResponse = await axios.get(`${N8N_BASE_URL}/workflows`, {
+      const workflowsResponse = await axios.get(`${global.N8N_BASE_URL}/workflows`, {
         headers: {
-          'X-N8N-API-KEY': N8N_API_TOKEN,
+          'X-N8N-API-KEY': global.N8N_API_TOKEN,
           'Content-Type': 'application/json'
         },
         timeout: 10000
@@ -369,9 +369,9 @@ async function checkSpecificWorkflow(workflowId) {
     log('info', `Monitoreando workflow específico: ${workflowId}`);
     
     // Get workflow details
-    const workflowResponse = await axios.get(`${N8N_BASE_URL}/workflows/${workflowId}`, {
+    const workflowResponse = await axios.get(`${global.N8N_BASE_URL}/workflows/${workflowId}`, {
       headers: {
-        'X-N8N-API-KEY': N8N_API_TOKEN,
+        'X-N8N-API-KEY': global.N8N_API_TOKEN,
         'Content-Type': 'application/json'
       },
       timeout: 10000
@@ -412,8 +412,8 @@ async function checkSpecificWorkflow(workflowId) {
 // Check executions for a specific workflow
 async function checkWorkflowExecutions(workflowId) {
   try {
-    const response = await axios.get(`${N8N_BASE_URL}/workflows/${workflowId}/executions`, {
-      headers: { 'X-N8N-API-KEY': N8N_API_TOKEN }
+    const response = await axios.get(`${global.N8N_BASE_URL}/workflows/${workflowId}/executions`, {
+      headers: { 'X-N8N-API-KEY': global.N8N_API_TOKEN }
     });
     
     const executions = Array.isArray(response.data) ? response.data : [];
@@ -464,9 +464,9 @@ async function configureWorkflowWebhook(workflowId) {
     log('info', `Configurando webhook para workflow: ${workflowId}`);
     
     // Get current workflow to check if it has webhook trigger
-    const workflowResponse = await axios.get(`${N8N_BASE_URL}/workflows/${workflowId}`, {
+    const workflowResponse = await axios.get(`${global.N8N_BASE_URL}/workflows/${workflowId}`, {
       headers: {
-        'X-N8N-API-KEY': N8N_API_TOKEN,
+        'X-N8N-API-KEY': global.N8N_API_TOKEN,
         'Content-Type': 'application/json'
       }
     });
@@ -505,9 +505,9 @@ async function configureWorkflowWebhook(workflowId) {
         workflow.nodes.push(webhookNode);
         
         // Update workflow
-        const updateResponse = await axios.put(`${N8N_BASE_URL}/workflows/${workflowId}`, workflow, {
+        const updateResponse = await axios.put(`${global.N8N_BASE_URL}/workflows/${workflowId}`, workflow, {
           headers: {
-            'X-N8N-API-KEY': N8N_API_TOKEN,
+            'X-N8N-API-KEY': global.N8N_API_TOKEN,
             'Content-Type': 'application/json'
           }
         });
@@ -697,9 +697,9 @@ app.post('/api/monitoring/stop', (req, res) => {
 // List available workflows
 app.get('/api/workflows', async (req, res) => {
   try {
-    const response = await axios.get(`${N8N_BASE_URL}/workflows`, {
+    const response = await axios.get(`${global.N8N_BASE_URL}/workflows`, {
       headers: {
-        'X-N8N-API-KEY': N8N_API_TOKEN,
+        'X-N8N-API-KEY': global.N8N_API_TOKEN,
         'Content-Type': 'application/json'
       },
       timeout: 10000
@@ -798,14 +798,70 @@ app.get('/api/test-n8n', async (req, res) => {
   }
 });
 
+// Endpoint to get list of workflows (must be before parameterized route)
+app.get('/api/workflows/list', async (req, res) => {
+  try {
+    console.log('📋 Obteniendo lista de workflows...');
+    
+    if (!global.N8N_API_TOKEN || !global.N8N_BASE_URL) {
+      return res.status(400).json({ 
+        error: 'API de n8n no configurada. Configure primero el token de API.',
+        needsConfig: true
+      });
+    }
+    
+    const response = await axios.get(`${global.N8N_BASE_URL}/workflows`, {
+      headers: { 'X-N8N-API-KEY': global.N8N_API_TOKEN },
+      timeout: 10000
+    });
+    
+    if (response.status === 200) {
+      const workflows = response.data.data || [];
+      console.log(`✅ ${workflows.length} workflows encontrados`);
+      
+      // Formatear datos para el frontend
+      const formattedWorkflows = workflows.map(workflow => ({
+        id: workflow.id,
+        name: workflow.name,
+        active: workflow.active,
+        nodes: workflow.nodes,
+        createdAt: workflow.createdAt,
+        updatedAt: workflow.updatedAt
+      }));
+      
+      res.json({
+        success: true,
+        workflows: formattedWorkflows,
+        count: formattedWorkflows.length
+      });
+    } else {
+      throw new Error('Error al obtener workflows de n8n');
+    }
+    
+  } catch (error) {
+    console.error('❌ Error obteniendo workflows:', error.message);
+    
+    if (error.response?.status === 401) {
+      res.status(401).json({ 
+        error: 'Token de API inválido',
+        needsConfig: true
+      });
+    } else {
+      res.status(500).json({ 
+        error: 'Error al conectar con n8n: ' + error.message
+      });
+    }
+  }
+});
+
 // Proxy endpoint for frontend to get workflow details
 app.get('/api/workflows/:workflowId', async (req, res) => {
   try {
     const { workflowId } = req.params;
     
-    const response = await axios.get(`${N8N_BASE_URL}/workflows/${workflowId}`, {
+    const response = await axios.get(`${global.N8N_BASE_URL}/workflows/${workflowId}`, {
       headers: {
-        'X-N8N-API-KEY': N8N_API_TOKEN,
+        'X-N8N-API-KEY': global.N8N_API_TOKEN,
         'Content-Type': 'application/json'
       },
       timeout: 10000
@@ -830,8 +886,209 @@ app.get('/api/workflows/:workflowId', async (req, res) => {
   }
 });
 
+// Endpoint to validate API configuration
+app.post('/api/config/validate', async (req, res) => {
+  try {
+    const { n8nBaseUrl, n8nApiToken } = req.body;
+    
+    if (!n8nApiToken) {
+      return res.status(400).json({ error: 'Token de API requerido' });
+    }
+    
+    if (!n8nBaseUrl) {
+      return res.status(400).json({ error: 'URL base de n8n requerida' });
+    }
+    
+    // Validate the configuration by testing the connection
+    const testUrl = n8nBaseUrl.endsWith('/api/v1') ? n8nBaseUrl : `${n8nBaseUrl}/api/v1`;
+    
+    // First, check if n8n is available
+    try {
+      const healthUrl = n8nBaseUrl.endsWith('/api/v1') ? n8nBaseUrl.replace('/api/v1', '') : n8nBaseUrl;
+      const healthResponse = await axios.get(`${healthUrl}/healthz`, { timeout: 5000 });
+      
+      if (healthResponse.status !== 200) {
+        throw new Error('n8n no está disponible en esta URL');
+      }
+    } catch (error) {
+      console.log('Health check failed:', error.message);
+      return res.status(400).json({ 
+        error: 'n8n no está disponible en esta URL. Verifica que n8n esté funcionando.',
+        details: error.message
+      });
+    }
+    
+    // Then, test the API token
+    try {
+      const apiResponse = await axios.get(`${testUrl}/workflows`, {
+        headers: { 'X-N8N-API-KEY': n8nApiToken },
+        timeout: 10000
+      });
+      
+      if (apiResponse.status === 200) {
+        // Configuration is valid, update it
+        global.N8N_BASE_URL = testUrl;
+        global.N8N_API_TOKEN = n8nApiToken;
+        
+        console.log(`✅ Configuración validada y actualizada:`);
+        console.log(`   📡 URL base: ${global.N8N_BASE_URL}`);
+        console.log(`   🔑 Token: ${n8nApiToken.substring(0, 20)}...`);
+        
+        // Broadcast configuration update to WebSocket clients
+        const message = JSON.stringify({
+          type: 'config_updated',
+          message: 'Configuración de API actualizada',
+          timestamp: new Date().toISOString()
+        });
+        
+        clients.forEach(client => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(message);
+          }
+        });
+        
+        res.json({ 
+          success: true, 
+          message: 'Configuración válida y actualizada',
+          workflowCount: apiResponse.data?.data?.length || 0
+        });
+      } else {
+        throw new Error('Token de API inválido');
+      }
+    } catch (error) {
+      console.log('API validation failed:', error.message);
+      if (error.response?.status === 401) {
+        return res.status(400).json({ error: 'Token de API inválido' });
+      } else {
+        return res.status(400).json({ 
+          error: 'Error al conectar con la API de n8n',
+          details: error.message
+        });
+      }
+    }
+    
+  } catch (error) {
+    console.error('Error validando configuración:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+
+// Endpoint to update target workflow
+app.post('/api/workflow/select', (req, res) => {
+  try {
+    const { workflowId, workflowName } = req.body;
+    
+    if (!workflowId) {
+      return res.status(400).json({ error: 'ID de workflow requerido' });
+    }
+    
+    // Update target workflow globally
+    TARGET_WORKFLOW_ID = workflowId;
+    
+    console.log(`🎯 Workflow objetivo actualizado:`);
+    console.log(`   📋 ID: ${workflowId}`);
+    console.log(`   📝 Nombre: ${workflowName || 'Sin nombre'}`);
+    
+    // Reset monitoring state when changing workflow
+    isMonitoring = false;
+    lastWorkflowCount = 0;
+    lastExecutionCount = 0;
+    knownWorkflows.clear();
+    knownExecutions.clear();
+    workflowHashes.clear();
+    
+    // Broadcast workflow change to WebSocket clients
+    const message = JSON.stringify({
+      type: 'workflow_selected',
+      workflowId: workflowId,
+      workflowName: workflowName,
+      message: `Workflow seleccionado: ${workflowName}`,
+      timestamp: new Date().toISOString()
+    });
+    
+    clients.forEach(client => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(message);
+      }
+    });
+    
+    res.json({ 
+      success: true, 
+      message: 'Workflow objetivo actualizado',
+      workflowId: workflowId,
+      workflowName: workflowName
+    });
+    
+  } catch (error) {
+    console.error('Error actualizando workflow objetivo:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// Endpoint to update API configuration
+app.post('/api/config/update', (req, res) => {
+  try {
+    const { n8nBaseUrl, n8nApiToken } = req.body;
+    
+    if (!n8nApiToken) {
+      return res.status(400).json({ error: 'Token de API requerido' });
+    }
+    
+    if (!n8nBaseUrl) {
+      return res.status(400).json({ error: 'URL base de n8n requerida' });
+    }
+    
+    // Update global configuration
+    global.N8N_BASE_URL = n8nBaseUrl.endsWith('/api/v1') ? n8nBaseUrl : `${n8nBaseUrl}/api/v1`;
+    global.N8N_API_TOKEN = n8nApiToken;
+    
+    console.log(`🔧 Configuración actualizada:`);
+    console.log(`   📡 URL base: ${global.N8N_BASE_URL}`);
+    console.log(`   🔑 Token: ${n8nApiToken.substring(0, 20)}...`);
+    
+    // Broadcast configuration update to WebSocket clients
+    const message = JSON.stringify({
+      type: 'config_updated',
+      message: 'Configuración de API actualizada',
+      timestamp: new Date().toISOString()
+    });
+    
+    clients.forEach(client => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(message);
+      }
+    });
+    
+    res.json({ 
+      success: true, 
+      message: 'Configuración actualizada correctamente',
+      config: {
+        baseUrl: global.N8N_BASE_URL,
+        tokenLength: n8nApiToken.length
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error actualizando configuración:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// Debug endpoint to check global configuration
+app.get('/debug/config', (req, res) => {
+  res.json({
+    hasApiToken: !!global.N8N_API_TOKEN,
+    hasBaseUrl: !!global.N8N_BASE_URL,
+    tokenLength: global.N8N_API_TOKEN ? global.N8N_API_TOKEN.length : 0,
+    baseUrl: global.N8N_BASE_URL || 'No configurado',
+    targetWorkflowId: TARGET_WORKFLOW_ID || 'No configurado',
+    timestamp: new Date().toISOString()
+  });
 });
 
 const PORT = process.env.PORT || 3001;

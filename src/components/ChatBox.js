@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import ChatHeader from './ChatHeader';
 import ChatContent from './ChatContent';
 import ChatFooter from './ChatFooter';
+import ApiConfig from './ApiConfig';
+import WorkflowSelector from './WorkflowSelector';
 // import N8nLogs from './N8nLogs';
 import n8nMonitorService from '../services/n8nMonitorService';
 
@@ -22,6 +24,16 @@ const ChatBox = () => {
   // const [n8nLogs, setN8nLogs] = useState([]);
   const [isMonitoring, setIsMonitoring] = useState(false);
   const [workflowStatus, setWorkflowStatus] = useState(null);
+  
+  // API Configuration states
+  const [showApiConfig, setShowApiConfig] = useState(false);
+  const [apiConfigured, setApiConfigured] = useState(false);
+  const [apiConfig, setApiConfig] = useState({ token: '', baseUrl: 'http://localhost:5678' });
+  
+  // Workflow Selection states
+  const [showWorkflowSelector, setShowWorkflowSelector] = useState(false);
+  const [selectedWorkflow, setSelectedWorkflow] = useState(null);
+  const [workflowConfigured, setWorkflowConfigured] = useState(false);
 
   const instructions = useMemo(() => [
     {
@@ -104,6 +116,103 @@ const ChatBox = () => {
           break;
       }
     }
+  }, []);
+
+  // Check for saved API configuration on mount
+  useEffect(() => {
+    const savedToken = localStorage.getItem('n8n_api_token');
+    const savedUrl = localStorage.getItem('n8n_base_url');
+    const savedWorkflowId = localStorage.getItem('selected_workflow_id');
+    const savedWorkflowName = localStorage.getItem('selected_workflow_name');
+    
+    if (savedToken && savedUrl) {
+      const config = { n8nApiToken: savedToken, n8nBaseUrl: savedUrl };
+      setApiConfig(config);
+      setApiConfigured(true);
+      
+      // Send saved configuration to backend
+      console.log('🔄 Enviando configuración guardada al backend...');
+      if (window.WebSocket && n8nMonitorService) {
+        n8nMonitorService.updateApiConfig(config);
+      }
+      
+      // Check if workflow is also configured
+      if (savedWorkflowId && savedWorkflowName) {
+        setSelectedWorkflow({ 
+          id: savedWorkflowId, 
+          name: savedWorkflowName 
+        });
+        setWorkflowConfigured(true);
+      } else {
+        // API configured but no workflow selected - wait for backend config to apply
+        console.log('⏳ Esperando configuración del backend...');
+        setTimeout(() => {
+          setShowWorkflowSelector(true);
+        }, 2000); // Increased wait time for backend config
+      }
+    } else {
+      // No API configuration
+      console.log('🔐 No hay configuración guardada, mostrando modal de configuración');
+      setShowApiConfig(true);
+    }
+  }, []);
+
+  // API Configuration handlers
+  const handleApiConfigured = useCallback((config) => {
+    setApiConfig(config);
+    setApiConfigured(true);
+    setShowApiConfig(false);
+    
+    // Send API config to backend
+    if (window.WebSocket && n8nMonitorService) {
+      n8nMonitorService.updateApiConfig(config);
+    }
+    
+    // After API is configured, show workflow selector if no workflow is selected
+    const savedWorkflowId = localStorage.getItem('selected_workflow_id');
+    if (!savedWorkflowId) {
+      // Wait a moment for the API config to propagate to the backend
+      setTimeout(() => {
+        setShowWorkflowSelector(true);
+      }, 1000);
+    }
+  }, []);
+
+  const handleOpenApiConfig = useCallback(() => {
+    setShowApiConfig(true);
+  }, []);
+
+  // Workflow Selection handlers
+  const handleWorkflowSelected = useCallback(async (workflow) => {
+    setSelectedWorkflow(workflow);
+    setWorkflowConfigured(true);
+    setShowWorkflowSelector(false);
+    
+    // Send workflow selection to backend
+    try {
+      const response = await fetch('http://localhost:3001/api/workflow/select', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          workflowId: workflow.id,
+          workflowName: workflow.name
+        })
+      });
+      
+      if (response.ok) {
+        console.log('✅ Workflow seleccionado correctamente:', workflow.name);
+      } else {
+        console.error('❌ Error al seleccionar workflow');
+      }
+    } catch (error) {
+      console.error('❌ Error enviando selección de workflow:', error);
+    }
+  }, []);
+
+  const handleOpenWorkflowSelector = useCallback(() => {
+    setShowWorkflowSelector(true);
   }, []);
 
   // Toggle real-time monitoring
@@ -363,6 +472,11 @@ const ChatBox = () => {
         isMonitoring={isMonitoring}
         onToggleMonitoring={handleToggleMonitoring}
         onReconnect={handleReconnect}
+        apiConfigured={apiConfigured}
+        onOpenApiConfig={handleOpenApiConfig}
+        workflowConfigured={workflowConfigured}
+        selectedWorkflow={selectedWorkflow}
+        onOpenWorkflowSelector={handleOpenWorkflowSelector}
       />
       
       <div className="flex-1"> {/* This div now takes full width */}
@@ -389,6 +503,21 @@ const ChatBox = () => {
         instructions={instructions} 
         isSpeaking={isSpeaking} 
       />
+      
+      {showApiConfig && (
+        <ApiConfig
+          onApiConfigured={handleApiConfigured}
+          onClose={() => setShowApiConfig(false)}
+        />
+      )}
+      
+      {showWorkflowSelector && (
+        <WorkflowSelector
+          onWorkflowSelected={handleWorkflowSelected}
+          onClose={() => setShowWorkflowSelector(false)}
+          apiConfig={apiConfig}
+        />
+      )}
     </div>
   );
 };
