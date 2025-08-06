@@ -1,92 +1,83 @@
 const axios = require('axios');
 
-// Tokens para probar
-const tokens = [
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjMjc4M2MxZS0xYzM0LTQ2NjUtYTQ4Yy1hYzI3NjAwMmI2OTZiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU0MzQ1OTQ5LCJleHAiOjE3NTY4NzU2MDB9._pTP0n3gOAzhigHv9i0EDQMZuFGR3jrpbcXTK-o1-ak',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjMjc4M2MxZS0xYzM0LTQ2NjUtYTQ4Yy1hYzI3NjAwMmI2OTZiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU0MzQ1NjYwLCJleHAiOjE3NTY4NzU2MDB9.VhIvqxdybx9185cNplJrMMQcru02cPYBSaYNx4zBVb0',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjMjc4M2MxZS0xYzM0LTQ2NjUtYTQ4Yy1hYzI3NjAwMmI2OTZiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU0MzQ0OTg2LCJleHAiOjE3NTY4NzU2MDB9.LUL_oBfPY48krBRGzJqI5e9Zfzz0EpQun_7fh-nfazo'
-];
+// n8n Configuration (same as server)
+const N8N_BASE_URL = 'http://localhost:5678/api/v1';
+const N8N_API_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZjkxNGRjYy1jZjZkLTQyYTgtYjEwNy00MWVhY2FkMDU2MmIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU0NDE2NjQzLCJleHAiOjE3NTY5NTg0MDB9.3x0inedA6Kqf74uMTHt8teRZoKFRmPS2WzA58y09YbI';
 
-const N8N_BASE_URL = 'https://algorithmicsaischool.app.n8n.cloud/api/v1';
-
-async function testToken(token, index) {
-  console.log(`\n🔍 Probando token ${index + 1}:`);
-  console.log(`   ${token.substring(0, 50)}...`);
+async function testN8nConnection() {
+  console.log('🧪 Testing n8n API Connection...\n');
   
   try {
-    const response = await axios.get(`${N8N_BASE_URL}/workflows`, {
+    // Test 1: Basic connectivity
+    console.log('1. Testing basic connectivity...');
+    const healthResponse = await axios.get('http://localhost:5678/', {
+      timeout: 5000
+    });
+    console.log('✅ n8n is accessible at http://localhost:5678/');
+    console.log(`   Status: ${healthResponse.status}`);
+    
+    // Test 2: API authentication
+    console.log('\n2. Testing API authentication...');
+    const workflowsResponse = await axios.get(`${N8N_BASE_URL}/workflows`, {
       headers: {
-        'X-N8N-API-KEY': token,
+        'X-N8N-API-KEY': N8N_API_TOKEN,
         'Content-Type': 'application/json'
       },
       timeout: 10000
     });
     
-    console.log(`✅ Token ${index + 1} FUNCIONA`);
-    console.log(`   Status: ${response.status}`);
-    console.log(`   Workflows encontrados: ${response.data.data?.length || 0}`);
+    console.log('✅ API authentication successful');
+    console.log(`   Status: ${workflowsResponse.status}`);
     
-    if (response.data.data && response.data.data.length > 0) {
-      console.log(`   Primer workflow: ${response.data.data[0].name} (${response.data.data[0].id})`);
+    const workflows = workflowsResponse.data.data || workflowsResponse.data;
+    const workflowsArray = Array.isArray(workflows) ? workflows : [];
+    console.log(`   Workflows found: ${workflowsArray.length}`);
+    
+    // Display workflows
+    if (workflowsArray.length > 0) {
+      console.log('\n   Available workflows:');
+      workflowsArray.forEach((workflow, index) => {
+        console.log(`   ${index + 1}. ${workflow.name || 'Unnamed'} (ID: ${workflow.id}) - ${workflow.active ? 'Active' : 'Inactive'}`);
+      });
     }
     
-    return true;
-  } catch (error) {
-    console.log(`❌ Token ${index + 1} FALLA`);
-    if (error.response) {
-      console.log(`   Status: ${error.response.status}`);
-      console.log(`   Error: ${error.response.data?.message || 'Unknown error'}`);
-    } else {
-      console.log(`   Error: ${error.message}`);
-    }
-    return false;
-  }
-}
-
-async function testAllTokens() {
-  console.log('🚀 Probando conectividad con n8n...\n');
-  
-  let workingToken = null;
-  
-  for (let i = 0; i < tokens.length; i++) {
-    const isWorking = await testToken(tokens[i], i);
-    if (isWorking) {
-      workingToken = tokens[i];
-      break;
-    }
-  }
-  
-  if (workingToken) {
-    console.log(`\n🎉 ¡Token funcional encontrado!`);
-    console.log(`   Token: ${workingToken}`);
-    
-    // Probar el workflow específico
-    console.log(`\n🔍 Probando workflow específico...`);
-    try {
-      const response = await axios.get(`${N8N_BASE_URL}/workflows/azmyvvsFI4XLvF6g`, {
+    // Test 3: Get specific workflow details
+    if (workflowsArray.length > 0) {
+      console.log('\n3. Testing workflow details...');
+      const firstWorkflow = workflowsArray[0];
+      const workflowResponse = await axios.get(`${N8N_BASE_URL}/workflows/${firstWorkflow.id}`, {
         headers: {
-          'X-N8N-API-KEY': workingToken,
+          'X-N8N-API-KEY': N8N_API_TOKEN,
           'Content-Type': 'application/json'
         }
       });
       
-      console.log(`✅ Workflow encontrado:`);
-      console.log(`   Nombre: ${response.data.name}`);
-      console.log(`   ID: ${response.data.id}`);
-      console.log(`   Activo: ${response.data.active ? 'Sí' : 'No'}`);
-      
-    } catch (error) {
-      console.log(`❌ Workflow no encontrado o error:`);
-      console.log(`   ${error.response?.data?.message || error.message}`);
+      console.log('✅ Workflow details retrieved successfully');
+      console.log(`   Workflow: ${firstWorkflow.name || 'Unnamed'}`);
+      console.log(`   Nodes: ${workflowResponse.data.nodes ? workflowResponse.data.nodes.length : 0}`);
     }
     
-  } else {
-    console.log(`\n❌ Ningún token funciona. Posibles causas:`);
-    console.log(`   1. Todos los tokens han expirado`);
-    console.log(`   2. La instancia de n8n no está disponible`);
-    console.log(`   3. Los tokens no tienen permisos de API`);
-    console.log(`   4. La URL de n8n ha cambiado`);
+    console.log('\n🎉 All tests passed! n8n API is working correctly.');
+    
+  } catch (error) {
+    console.error('\n❌ Test failed:', error.message);
+    
+    if (error.response) {
+      console.error(`   Status: ${error.response.status}`);
+      console.error(`   Status Text: ${error.response.statusText}`);
+      if (error.response.data) {
+        console.error(`   Response: ${JSON.stringify(error.response.data, null, 2)}`);
+      }
+    } else if (error.request) {
+      console.error('   Network error - n8n might not be running on localhost:5678');
+    }
+    
+    console.log('\n💡 Troubleshooting tips:');
+    console.log('   - Make sure n8n is running on http://localhost:5678/');
+    console.log('   - Check if the API token is valid');
+    console.log('   - Verify n8n API is enabled');
   }
 }
 
-testAllTokens().catch(console.error); 
+// Run the test
+testN8nConnection(); 

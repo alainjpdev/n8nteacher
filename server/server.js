@@ -8,16 +8,49 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
+// CORS Configuration
+const corsOptions = {
+  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5678'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With',
+    'X-N8N-API-KEY',
+    'Accept',
+    'Origin'
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
+// Additional CORS handling for preflight requests
+app.options('*', cors(corsOptions));
+
+// Custom middleware to handle X-N8N-API-KEY header
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-N8N-API-KEY, Accept, Origin');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
 // n8n Configuration
-const N8N_BASE_URL = 'https://algorithmicsaischool.app.n8n.cloud/api/v1';
-const N8N_API_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjMjc4M2MxZS0xYzM0LTQ2NjUtYTQ4Yy1hYzI3NjAwMmI2OTZiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU0MzQ1NjYwLCJleHAiOjE3NTY4NzU2MDB9.VhIvqxdybx9185cNplJrMMQcru02cPYBSaYNx4zBVb0';
+const N8N_BASE_URL = 'http://localhost:5678/api/v1';
+const N8N_API_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZjkxNGRjYy1jZjZkLTQyYTgtYjEwNy00MWVhY2FkMDU2MmIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU0NDE2NjQzLCJleHAiOjE3NTY5NTg0MDB9.3x0inedA6Kqf74uMTHt8teRZoKFRmPS2WzA58y09YbI';
 
 // Configuración de monitoreo específico
-let TARGET_WORKFLOW_ID = null; // Cambia a un ID específico para monitorear solo ese workflow
+let TARGET_WORKFLOW_ID = 'FVKBIatFo5HXrLs7'; // ID del workflow "Agente para Principiantes"
 // Ejemplo: TARGET_WORKFLOW_ID = '0o5pJ8V3SCYCNJnF';
 
 // Store connected clients
@@ -132,7 +165,7 @@ async function testN8nConnectivity() {
     log('info', 'Probando conectividad con n8n...');
     
     // Test basic connectivity
-    const healthResponse = await axios.get('https://algorithmicsaischool.app.n8n.cloud/', {
+    const healthResponse = await axios.get('http://localhost:5678/', {
       timeout: 5000
     });
     log('success', 'La URL de n8n es accesible');
@@ -762,6 +795,38 @@ app.get('/api/test-n8n', async (req, res) => {
     res.json({ success: isConnected, message: isConnected ? 'Conexión exitosa' : 'Error de conexión', timestamp: new Date().toISOString() });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message, timestamp: new Date().toISOString() });
+  }
+});
+
+// Proxy endpoint for frontend to get workflow details
+app.get('/api/workflows/:workflowId', async (req, res) => {
+  try {
+    const { workflowId } = req.params;
+    
+    const response = await axios.get(`${N8N_BASE_URL}/workflows/${workflowId}`, {
+      headers: {
+        'X-N8N-API-KEY': N8N_API_TOKEN,
+        'Content-Type': 'application/json'
+      },
+      timeout: 10000
+    });
+    
+    res.json(response.data);
+  } catch (error) {
+    console.error('Error fetching workflow:', error);
+    if (error.response?.status === 404) {
+      res.status(404).json({ 
+        success: false, 
+        message: 'Workflow no encontrado',
+        error: 'Workflow not found'
+      });
+    } else {
+      res.status(500).json({ 
+        success: false, 
+        error: error.message,
+        message: 'Error al obtener workflow'
+      });
+    }
   }
 });
 

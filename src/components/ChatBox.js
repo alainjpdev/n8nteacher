@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import ChatHeader from './ChatHeader';
 import ChatContent from './ChatContent';
 import ChatFooter from './ChatFooter';
-import N8nLogs from './N8nLogs';
+// import N8nLogs from './N8nLogs';
 import n8nMonitorService from '../services/n8nMonitorService';
 
 const ChatBox = () => {
@@ -19,63 +19,63 @@ const ChatBox = () => {
   const [n8nLoading, setN8nLoading] = useState(false);
   const [n8nError, setN8nError] = useState('');
   const [currentWorkflow, setCurrentWorkflow] = useState(null);
-  const [n8nLogs, setN8nLogs] = useState([]);
+  // const [n8nLogs, setN8nLogs] = useState([]);
   const [isMonitoring, setIsMonitoring] = useState(false);
   const [workflowStatus, setWorkflowStatus] = useState(null);
 
   const instructions = useMemo(() => [
     {
-      title: "Ejercicio 1: Configuración Básica",
-      content: "Crea un nuevo workflow en n8n. Configura un trigger de webhook que se active cuando recibas una petición POST con datos JSON.",
-      duration: 8000,
-      type: 'webhook',
-      action: 'create_webhook_workflow'
+      title: "Ejercicio 1: Configurar Credenciales de OpenAI",
+      content: "Abre el workflow 'Agente para Principiantes' en n8n. Ve al nodo 'OpenAI Chat Model' y configura las credenciales de OpenAI. Necesitarás tu API key de OpenAI para que el agente funcione correctamente.",
+      duration: 10000,
+      type: 'credentials',
+      action: 'configure_openai_credentials'
     },
     {
-      title: "Ejercicio 2: Procesamiento de Datos",
-      content: "Agrega un nodo Set para procesar los datos recibidos. Extrae el email y nombre del JSON de entrada.",
-      duration: 8000,
-      type: 'data_processing',
-      action: 'add_set_node'
+      title: "Ejercicio 2: Configurar Credenciales de Gmail",
+      content: "En el mismo workflow, ve al nodo 'Gmail' y configura las credenciales de Gmail. Esto permitirá que el agente envíe emails automáticamente cuando reciba formularios.",
+      duration: 10000,
+      type: 'credentials',
+      action: 'configure_gmail_credentials'
     },
     {
-      title: "Ejercicio 3: Validación",
-      content: "Implementa un nodo IF para validar que el email tenga un formato correcto antes de continuar.",
+      title: "Ejercicio 3: Activar el Workflow",
+      content: "Una vez configuradas las credenciales, activa el workflow 'Agente para Principiantes' haciendo clic en el botón de activación. Esto hará que el agente esté listo para recibir formularios.",
       duration: 8000,
-      type: 'validation',
-      action: 'add_validation_node'
+      type: 'activation',
+      action: 'activate_workflow'
     },
     {
-      title: "Ejercicio 4: Almacenamiento",
-      content: "Agrega un nodo PostgreSQL para guardar los datos validados en una base de datos.",
-      duration: 8000,
-      type: 'database',
-      action: 'add_database_node'
-    },
-    {
-      title: "Ejercicio 5: Notificaciones",
-      content: "Configura un nodo Email para enviar una notificación de confirmación al usuario.",
-      duration: 8000,
-      type: 'notification',
-      action: 'add_email_node'
-    },
-    {
-      title: "Ejercicio 6: Pruebas",
-      content: "Ejecuta el workflow completo con datos de prueba para verificar que todo funcione correctamente.",
-      duration: 8000,
+      title: "Ejercicio 4: Probar el Formulario",
+      content: "Ve a la URL del formulario web del workflow y llena el formulario con datos de prueba. Esto activará el agente y deberías recibir un email de respuesta automática.",
+      duration: 10000,
       type: 'testing',
-      action: 'test_workflow'
+      action: 'test_form'
+    },
+    {
+      title: "Ejercicio 5: Monitorear Ejecuciones",
+      content: "En n8n, ve a la pestaña 'Executions' para ver las ejecuciones del workflow. Aquí podrás ver si el agente está procesando correctamente los formularios y enviando emails.",
+      duration: 8000,
+      type: 'monitoring',
+      action: 'monitor_executions'
+    },
+    {
+      title: "Ejercicio 6: Personalizar el Agente",
+      content: "Modifica el prompt del nodo 'AI Agent' para personalizar las respuestas del agente. Puedes cambiar el tono, agregar más información o modificar la lógica de respuesta según tus necesidades.",
+      duration: 12000,
+      type: 'customization',
+      action: 'customize_agent'
     }
   ], []);
 
-  // n8n Log callback
-  const handleN8nLog = useCallback((logEntry) => {
-    setN8nLogs(prevLogs => {
-      const newLogs = [...prevLogs, logEntry];
-      // Keep only last 50 logs to prevent memory issues
-      return newLogs.slice(-50);
-    });
-  }, []);
+  // n8n Log callback - Comentado ya que los logs están ocultos
+  // const handleN8nLog = useCallback((logEntry) => {
+  //   setN8nLogs(prevLogs => {
+  //     const newLogs = [...prevLogs, logEntry];
+  //     // Keep only last 50 logs to prevent memory issues
+  //     return newLogs.slice(-50);
+  //   });
+  // }, []);
 
   // n8n Status callback
   const handleN8nStatus = useCallback((statusData) => {
@@ -99,6 +99,9 @@ const ChatBox = () => {
         case 'disconnected':
           setN8nError('Desconectado del servidor');
           break;
+        default:
+          // Handle any other status
+          break;
       }
     }
   }, []);
@@ -120,7 +123,7 @@ const ChatBox = () => {
       setN8nLoading(true);
       try {
         // Set up callbacks
-        n8nMonitorService.setLogCallback(handleN8nLog);
+        // n8nMonitorService.setLogCallback(handleN8nLog);
         n8nMonitorService.setStatusCallback(handleN8nStatus);
         
         // Test connection
@@ -141,7 +144,7 @@ const ChatBox = () => {
     };
 
     initializeN8n();
-  }, [handleN8nLog, handleN8nStatus]);
+  }, [handleN8nStatus]);
 
   // Handle exercise actions
   const handleExerciseAction = useCallback(async (exercise) => {
@@ -377,8 +380,8 @@ const ChatBox = () => {
           workflowStatus={workflowStatus}
         />
         
-        {/* n8n Logs Section */}
-        <N8nLogs logs={n8nLogs} />
+        {/* n8n Logs Section - Oculto */}
+        {/* <N8nLogs logs={n8nLogs} /> */}
       </div>
       
       <ChatFooter 

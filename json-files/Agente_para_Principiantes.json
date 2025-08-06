@@ -1,0 +1,220 @@
+{
+  "name": "Agente para Principiantes",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Hola soy un Usuario que:\n\n¿Se automatizar?: {{ $json['Sabes automatizar?'] }}\n\n¿Quiero formacion Gratis o plus?: {{ $json['¿Quieres formación Gratis o Plus?'] }}\n\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Eres un ejecutivo de atención al cliente, te llamadas Dan y Trabajas para Dania.ai. Tu misión es darle al cliente toda la información que solicite sobre la formación de Dania. \n\nEnvia un Email al usuario agradeciendo por su Interes en Dania y diles a los que quieran entrar Gratis que la academia es skool.com/dania y a los que quieran formación plus que vayan a skool.com/academia-ia\n\n\nNecesito:\n\nSubjet:\nMessage:\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -580,
+        -360
+      ],
+      "id": "db697dab-2bd4-487a-94fe-41361a8b7468",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4.1",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -660,
+        -180
+      ],
+      "id": "99cdbcff-2e89-492e-b986-1af4bf63810c",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "9EeJQW3Y0MfBKmRA",
+          "name": "OpenRouter_12Mayovideo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "¿Quieres aprender automatización con IA?",
+        "formDescription": "Dime que es lo que más te gusta de la IA para monetizar y aprenderlo",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Sabes automatizar?",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Si"
+                  },
+                  {
+                    "option": "Estoy aprendiendo"
+                  },
+                  {
+                    "option": "No"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "¿Quieres formación Gratis o Plus?",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Gratis"
+                  },
+                  {
+                    "option": "Plus"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Email",
+              "placeholder": "Escribe tu email",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false,
+          "buttonLabel": "Enviar",
+          "useWorkflowTimezone": false,
+          "customCss": "=:root {\n\t--font-family: 'Open Sans', sans-serif;\n\t--font-weight-normal: 400;\n\t--font-weight-bold: 600;\n\t--font-size-body: 12px;\n\t--font-size-label: 14px;\n\t--font-size-test-notice: 12px;\n\t--font-size-input: 14px;\n\t--font-size-header: 20px;\n\t--font-size-paragraph: 14px;\n\t--font-size-link: 12px;\n\t--font-size-error: 12px;\n\t--font-size-html-h1: 28px;\n\t--font-size-html-h2: 20px;\n\t--font-size-html-h3: 16px;\n\t--font-size-html-h4: 14px;\n\t--font-size-html-h5: 12px;\n\t--font-size-html-h6: 10px;\n\t--font-size-subheader: 14px;\n\n\t/* Colors */\n\t--color-background: #fbfcfe;\n\t--color-test-notice-text: #e6a23d;\n\t--color-test-notice-bg: #fefaf6;\n\t--color-test-notice-border: #f6dcb7;\n\t--color-card-bg: #ffffff;\n\t--color-card-border: #dbdfe7;\n\t--color-card-shadow: rgba(99, 77, 255, 0.06);\n\t--color-link: #7e8186;\n\t--color-header: #525356;\n\t--color-label: #555555;\n\t--color-input-border: #dbdfe7;\n\t--color-input-text: #71747A;\n\t--color-focus-border: rgb(90, 76, 194);\n\t--color-submit-btn-bg: #ff6d5a;\n\t--color-submit-btn-text: #ffffff;\n\t--color-error: #ea1f30;\n\t--color-required: #ff6d5a;\n\t--color-clear-button-bg: #7e8186;\n\t--color-html-text: #555;\n\t--color-html-link: #ff6d5a;\n\t--color-header-subtext: #7e8186;\n\n\t/* Border Radii */\n\t--border-radius-card: 8px;\n\t--border-radius-input: 6px;\n\t--border-radius-clear-btn: 50%;\n\t--card-border-radius: 8px;\n\n\t/* Spacing */\n\t--padding-container-top: 24px;\n\t--padding-card: 24px;\n\t--padding-test-notice-vertical: 12px;\n\t--padding-test-notice-horizontal: 24px;\n\t--margin-bottom-card: 16px;\n\t--padding-form-input: 12px;\n\t--card-padding: 24px;\n\t--card-margin-bottom: 16px;\n\n\t/* Dimensions */\n\t--container-width: 448px;\n\t--submit-btn-height: 48px;\n\t--checkbox-size: 18px;\n\n\t/* Others */\n\t--box-shadow-card: 0px 4px 16px 0px var(--color-card-shadow);\n\t--opacity-placeholder: 0.5;\n}"
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -820,
+        -360
+      ],
+      "id": "f4b58316-005e-497a-a6db-69d72800fc70",
+      "name": "On form submission",
+      "webhookId": "6be01a6f-acc2-4daf-9f8d-b95df597f2ea"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('On form submission').item.json.Email }}",
+        "subject": "={{ $json.output.Subject }}",
+        "message": "={{ $json.output.Message }}",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "Dan [Asistente IA Dania]"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -200,
+        -360
+      ],
+      "id": "0ec3726f-c94b-4234-82c0-ec1fb31f8111",
+      "name": "Gmail",
+      "webhookId": "d933b382-430c-4c97-b319-ffbed67017b4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "TzeTOD3sg6v8e5l8",
+          "name": "Gmail_12MAyo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"Subject\": \"Para ti que quieres Aprender\",\n\t\"Message\": \"Querido usuario, bienvenido a Dania...\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        -300,
+        -160
+      ],
+      "id": "12c368dd-68f1-4e51-b296-a240cba20477",
+      "name": "Structured Output Parser"
+    }
+  ],
+  "pinData": {
+    "On form submission": [
+      {
+        "json": {
+          "Sabes automatizar?": "No",
+          "¿Quieres formación Gratis o Plus?": "Gratis",
+          "Email": "dev@dania.ai",
+          "submittedAt": "2025-05-12T13:10:51.367Z",
+          "formMode": "test"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8cdb4ba0-d139-4c8e-839b-0768c7fece1f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "01b8f26964cd042d935609616b028f5c88aa98861480171202a45a4b9bb08cb0"
+  },
+  "id": "nGBSONK0TkWg25Ro",
+  "tags": [
+    {
+      "name": "Formación Youtube",
+      "id": "FxOiBYJ3iijozpYm",
+      "createdAt": "2025-05-13T14:03:16.430Z",
+      "updatedAt": "2025-05-13T14:03:16.430Z"
+    }
+  ]
+}

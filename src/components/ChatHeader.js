@@ -1,81 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
 const ChatHeader = ({ isSpeaking, onStopSpeaking, onTestAudio, n8nConnected, n8nLoading, onConnectN8n, isMonitoring, onToggleMonitoring, onReconnect }) => {
-  const [showWorkflowSelector, setShowWorkflowSelector] = useState(false);
-  const [workflowId, setWorkflowId] = useState('');
-  const [targetWorkflowId, setTargetWorkflowId] = useState(null);
-
-  // Get current target workflow from server
-  useEffect(() => {
-    const fetchTargetWorkflow = async () => {
-      try {
-        const response = await fetch('http://localhost:3001/api/target-workflow');
-        const data = await response.json();
-        setTargetWorkflowId(data.targetWorkflowId);
-      } catch (error) {
-        console.error('Error fetching target workflow:', error);
-      }
-    };
-
-    if (n8nConnected) {
-      fetchTargetWorkflow();
-    }
-  }, [n8nConnected]);
-
-  const selectWorkflow = async (workflowId) => {
-    try {
-      const response = await fetch('http://localhost:3001/api/target-workflow', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ workflowId: workflowId || null })
-      });
-      const data = await response.json();
-      if (data.success) {
-        setShowWorkflowSelector(false);
-        setWorkflowId('');
-        setTargetWorkflowId(data.targetWorkflowId);
-        // Refresh the page or update state
-        window.location.reload();
-      }
-    } catch (error) {
-      console.error('Error selecting workflow:', error);
-    }
-  };
-
-  const configureWebhook = async () => {
-    if (!targetWorkflowId) {
-      alert('Primero configura un workflow objetivo');
-      return;
-    }
-
-    try {
-      const response = await fetch(`http://localhost:3001/api/configure-webhook/${targetWorkflowId}`, {
-        method: 'POST'
-      });
-      const data = await response.json();
-      if (data.success) {
-        alert('Webhook configurado exitosamente');
-      } else {
-        alert('Error configurando webhook');
-      }
-    } catch (error) {
-      alert('Error configurando webhook');
-    }
-  };
-
   return (
     <div className="bg-gray-800 border-b border-gray-700 p-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          {/* Home Button */}
-          <button className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-all duration-300">
-            🏠 Inicio
-          </button>
 
-          {/* Settings Button */}
-          <button className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-600 text-white hover:bg-gray-700 transition-all duration-300">
-            ⚙️ Configuración
-          </button>
 
           {/* Audio Test Button */}
           <button 
@@ -115,24 +45,6 @@ const ChatHeader = ({ isSpeaking, onStopSpeaking, onTestAudio, n8nConnected, n8n
             </span>
           </button>
 
-          {/* Workflow Selector Button */}
-          <button 
-            onClick={() => setShowWorkflowSelector(!showWorkflowSelector)}
-            className="px-4 py-2 rounded-lg text-sm font-medium bg-purple-600 text-white hover:bg-purple-700 transition-all duration-300"
-          >
-            📋 Configurar Workflow
-          </button>
-
-          {/* Configure Webhook Button */}
-          {n8nConnected && targetWorkflowId && (
-            <button 
-              onClick={configureWebhook}
-              className="px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-300"
-            >
-              🔗 Configurar Webhook
-            </button>
-          )}
-
           {/* Real-time Monitoring Button */}
           {n8nConnected && (
             <button 
@@ -171,72 +83,6 @@ const ChatHeader = ({ isSpeaking, onStopSpeaking, onTestAudio, n8nConnected, n8n
             <span>Reconectar</span>
           </button>
         </div>
-
-        {/* Workflow Selector Modal */}
-        {showWorkflowSelector && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-white">Configurar Workflow para Monitorear</h3>
-                <button 
-                  onClick={() => setShowWorkflowSelector(false)}
-                  className="text-gray-400 hover:text-white"
-                >
-                  ✕
-                </button>
-              </div>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    ID del Workflow (opcional)
-                  </label>
-                  <input
-                    type="text"
-                    value={workflowId}
-                    onChange={(e) => setWorkflowId(e.target.value)}
-                    placeholder="Ej: 0o5pJ8V3SCYCNJnF"
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                  <p className="text-xs text-gray-400 mt-1">
-                    Deja vacío para monitorear todos los workflows
-                  </p>
-                </div>
-                
-                <div className="text-sm text-gray-300">
-                  <p className="mb-2"><strong>Instrucciones:</strong></p>
-                  <ul className="list-disc list-inside space-y-1 text-xs">
-                    <li>Para encontrar el ID del workflow, ve a tu instancia de n8n</li>
-                    <li>Abre el workflow que quieres monitorear</li>
-                    <li>El ID aparece en la URL: <code className="bg-gray-700 px-1 rounded">https://algorithmicsaischool.app.n8n.cloud/workflow/ID_DEL_WORKFLOW</code></li>
-                    <li>Copia solo el ID (sin la URL completa)</li>
-                  </ul>
-                </div>
-              </div>
-              
-              <div className="mt-6 flex justify-end space-x-2">
-                <button 
-                  onClick={() => selectWorkflow(null)}
-                  className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-                >
-                  Monitorear Todos
-                </button>
-                <button 
-                  onClick={() => selectWorkflow(workflowId)}
-                  className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
-                >
-                  Configurar
-                </button>
-                <button 
-                  onClick={() => setShowWorkflowSelector(false)}
-                  className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-                >
-                  Cancelar
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

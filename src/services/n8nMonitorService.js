@@ -2,9 +2,8 @@ import axios from 'axios';
 
 class N8nMonitorService {
   constructor() {
-    this.baseURL = 'http://localhost:5678/api/v1';
-    this.apiKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3ZTlmYTc0YS05MWUyLTRlYjctYmNhNy05NDJhOWNkNDE5MTciLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU0MzQ5MjkzLCJleHAiOjE3NTY4NzIwMDB9.cwcMSR7gyrxW4WNRU9ZV_rLBPugUa0mw9ry6UHY_r1o';
-    this.targetWorkflowId = 'nGrfYSwOctx13r2U';
+    this.baseURL = 'http://localhost:3001/api';
+    this.targetWorkflowId = 'FVKBIatFo5HXrLs7';
     this.isMonitoring = false;
     this.monitoringInterval = null;
     this.logCallback = null;
@@ -19,7 +18,6 @@ class N8nMonitorService {
     this.api = axios.create({
       baseURL: this.baseURL,
       headers: {
-        'X-N8N-API-KEY': this.apiKey,
         'Content-Type': 'application/json'
       },
       timeout: 10000
@@ -92,7 +90,7 @@ class N8nMonitorService {
   // Monitor workflow
   async monitorWorkflow() {
     try {
-      const timestamp = new Date().toLocaleTimeString();
+      // Monitor workflow execution
       this.log(`🔍 Monitoreando workflow: ${this.targetWorkflowId}`, 'monitoring');
       
       // Get workflow details
@@ -147,7 +145,7 @@ class N8nMonitorService {
       // Check for workflow content changes
       const currentHash = this.generateWorkflowHash(workflow);
       if (this.lastWorkflowHash && this.lastWorkflowHash !== currentHash) {
-        const changeTime = new Date().toLocaleTimeString();
+        // Workflow changes detected
         this.log(`🔄 ¡CAMBIOS DETECTADOS en el workflow!`, 'change');
         this.log(`   Hash anterior: ${this.lastWorkflowHash.substring(0, 8)}...`, 'change');
         this.log(`   Hash actual:   ${currentHash.substring(0, 8)}...`, 'change');
@@ -249,7 +247,7 @@ class N8nMonitorService {
       // Check for new executions
       if (executions.length > this.lastExecutionCount) {
         const newExecutions = executions.length - this.lastExecutionCount;
-        const executionTime = new Date().toLocaleTimeString();
+        // New executions detected
         this.log(`🚀 ¡${newExecutions} nueva(s) ejecución(es) detectada(s)!`, 'execution');
         
         // Show details of new executions
