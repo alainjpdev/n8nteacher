@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ChatHeader = ({ isSpeaking, onStopSpeaking, onTestAudio, n8nConnected, n8nLoading, onConnectN8n, isMonitoring, onToggleMonitoring, onReconnect, apiConfigured, onOpenApiConfig, workflowConfigured, selectedWorkflow, onOpenWorkflowSelector }) => {
+const ChatHeader = ({ isSpeaking, onStopSpeaking, onTestAudio, n8nConnected, n8nLoading, onConnectN8n, isMonitoring, onToggleMonitoring, onReconnect, apiConfigured, onOpenApiConfig, workflowConfigured, selectedWorkflow, onOpenWorkflowSelector, isInitialized, onOpenBrowserMonitor, onOpenSimpleBrowserControl }) => {
   return (
     <div className="bg-gray-800 border-b border-gray-700 p-4">
       <div className="flex items-center justify-between">
@@ -25,28 +25,30 @@ const ChatHeader = ({ isSpeaking, onStopSpeaking, onTestAudio, n8nConnected, n8n
             </button>
           )}
 
-          {/* n8n Connection Button */}
-          <button 
-            onClick={onConnectN8n}
-            disabled={n8nLoading}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center space-x-2 ${
-              n8nConnected 
-                ? 'bg-green-600 text-white hover:bg-green-700' 
-                : 'bg-gray-600 text-white hover:bg-gray-700'
-            } ${n8nLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            <div className={`w-2 h-2 rounded-full ${
-              n8nConnected 
-                ? 'bg-green-300 animate-pulse' 
-                : 'bg-gray-300'
-            }`}></div>
-            <span>
-              {n8nLoading ? 'Conectando...' : n8nConnected ? 'Conectado' : 'Conectar n8n'}
-            </span>
-          </button>
+          {/* n8n Connection Button - Solo mostrar si está inicializado */}
+          {isInitialized && (
+            <button 
+              onClick={onConnectN8n}
+              disabled={n8nLoading}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center space-x-2 ${
+                n8nConnected 
+                  ? 'bg-green-600 text-white hover:bg-green-700' 
+                  : 'bg-gray-600 text-white hover:bg-gray-700'
+              } ${n8nLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <div className={`w-2 h-2 rounded-full ${
+                n8nConnected 
+                  ? 'bg-green-300 animate-pulse' 
+                  : 'bg-gray-300'
+              }`}></div>
+              <span>
+                {n8nLoading ? 'Conectando...' : n8nConnected ? 'Conectado' : 'Conectar n8n'}
+              </span>
+            </button>
+          )}
 
-          {/* Real-time Monitoring Button */}
-          {n8nConnected && workflowConfigured && (
+          {/* Real-time Monitoring Button - Solo mostrar si está inicializado */}
+          {isInitialized && n8nConnected && workflowConfigured && (
             <button 
               onClick={onToggleMonitoring}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center space-x-2 ${
@@ -72,26 +74,28 @@ const ChatHeader = ({ isSpeaking, onStopSpeaking, onTestAudio, n8nConnected, n8n
             </button>
           )}
 
-          {/* API Configuration Button */}
-          <button 
-            onClick={onOpenApiConfig}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center space-x-2 ${
-              apiConfigured 
-                ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                : 'bg-yellow-600 text-white hover:bg-yellow-700 animate-pulse'
-            }`}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <span>
-              {apiConfigured ? 'Configurar API' : '⚠️ Configurar API'}
-            </span>
-          </button>
+          {/* API Configuration Button - Solo mostrar si está completamente inicializado */}
+          {isInitialized && (
+            <button 
+              onClick={onOpenApiConfig}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center space-x-2 ${
+                apiConfigured 
+                  ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                  : 'bg-yellow-600 text-white hover:bg-yellow-700 animate-pulse'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>
+                {apiConfigured ? 'Configurar API' : '⚠️ Configurar API'}
+              </span>
+            </button>
+          )}
 
-          {/* Workflow Selection Button */}
-          {apiConfigured && (
+          {/* Workflow Selection Button - Solo mostrar si está completamente inicializado */}
+          {isInitialized && apiConfigured && (
             <button 
               onClick={onOpenWorkflowSelector}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center space-x-2 ${
@@ -115,6 +119,31 @@ const ChatHeader = ({ isSpeaking, onStopSpeaking, onTestAudio, n8nConnected, n8n
               </span>
             </button>
           )}
+
+          {/* Browser Monitor Button - Solo mostrar si está inicializado */}
+          {isInitialized && (
+            <button 
+              onClick={onOpenBrowserMonitor}
+              className="px-4 py-2 rounded-lg text-sm font-medium bg-purple-600 text-white hover:bg-purple-700 transition-all duration-300 flex items-center space-x-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              <span>🎓 Monitor</span>
+            </button>
+          )}
+
+          {/* Simple Browser Control Button - Siempre visible */}
+          <button 
+            onClick={onOpenSimpleBrowserControl}
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-green-600 text-white hover:bg-green-700 transition-all duration-300 flex items-center space-x-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
+            </svg>
+            <span>🌐 Abrir Browser</span>
+          </button>
 
           {/* Reconnect Button */}
           <button 

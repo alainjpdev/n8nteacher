@@ -3,7 +3,7 @@ import axios from 'axios';
 class N8nMonitorService {
   constructor() {
     this.baseURL = 'http://localhost:3001/api';
-    this.targetWorkflowId = 'FVKBIatFo5HXrLs7';
+    this.targetWorkflowId = null; // Se obtendrá del servidor
     this.isMonitoring = false;
     this.monitoringInterval = null;
     this.logCallback = null;
@@ -33,23 +33,6 @@ class N8nMonitorService {
     this.statusCallback = callback;
   }
 
-  // Update API configuration
-  updateApiConfig(config) {
-    this.log(`🔧 Actualizando configuración de API`, 'info');
-    this.log(`   📡 URL base: ${config.n8nBaseUrl || config.baseUrl}`, 'info');
-    this.log(`   🔑 Token: ${(config.n8nApiToken || config.token)?.substring(0, 20)}...`, 'info');
-    
-    // Send API config to backend via HTTP
-    this.api.post('/config/update', {
-      n8nBaseUrl: config.n8nBaseUrl || config.baseUrl,
-      n8nApiToken: config.n8nApiToken || config.token
-    }).then(() => {
-      this.log('✅ Configuración enviada al servidor', 'success');
-    }).catch(error => {
-      this.log(`❌ Error enviando configuración: ${error.message}`, 'error');
-    });
-  }
-
   // Generate workflow hash
   generateWorkflowHash(workflow) {
     const content = JSON.stringify({
@@ -73,12 +56,43 @@ class N8nMonitorService {
     return hash.toString(16);
   }
 
+  // Get server configuration
+  async getServerConfig() {
+    try {
+      const response = await this.api.get('/config');
+      if (response.data.success) {
+        this.targetWorkflowId = response.data.config.workflowId;
+        this.log(`🔧 Configuración obtenida del servidor: ${this.targetWorkflowId}`);
+        return response.data.config;
+      }
+      return null;
+    } catch (error) {
+      this.log(`❌ Error obteniendo configuración del servidor: ${error.message}`);
+      return null;
+    }
+  }
+
   // Get workflow details
   async getWorkflowDetails() {
     try {
+      // Ensure we have the workflow ID from server config
+      if (!this.targetWorkflowId) {
+        await this.getServerConfig();
+      }
+      
+      if (!this.targetWorkflowId) {
+        this.log('❌ No hay workflow configurado');
+        return null;
+      }
+      
       const response = await this.api.get(`/workflows/${this.targetWorkflowId}`);
       return response.data;
     } catch (error) {
+      // Silenciar errores si no está configurado aún
+      if (!this.targetWorkflowId) {
+        return null;
+      }
+      
       if (error.response?.status === 404) {
         this.log('❌ Workflow no encontrado');
         return null;
@@ -385,6 +399,34 @@ class N8nMonitorService {
       nodeCount: this.lastNodeCount,
       connectionCount: this.lastConnectionCount
     };
+  }
+
+  // Update API configuration
+  updateApiConfig(config) {
+    try {
+      // Update base URL if provided
+      if (config.baseURL) {
+        this.baseURL = config.baseURL;
+        this.api.defaults.baseURL = this.baseURL;
+        this.log(`🔧 URL actualizada: ${this.baseURL}`, 'config');
+      }
+      
+      // Update target workflow ID if provided
+      if (config.workflowId) {
+        this.targetWorkflowId = config.workflowId;
+        this.log(`🔧 Workflow ID actualizado: ${this.targetWorkflowId}`, 'config');
+      }
+      
+      // Update API token if provided
+      if (config.apiToken) {
+        this.api.defaults.headers['Authorization'] = `Bearer ${config.apiToken}`;
+        this.log(`🔧 Token de API actualizado`, 'config');
+      }
+      
+      this.log(`✅ Configuración de API actualizada correctamente`, 'success');
+    } catch (error) {
+      this.log(`❌ Error actualizando configuración de API: ${error.message}`, 'error');
+    }
   }
 
   // Cleanup

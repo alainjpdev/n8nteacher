@@ -4,6 +4,9 @@ import ChatContent from './ChatContent';
 import ChatFooter from './ChatFooter';
 import ApiConfig from './ApiConfig';
 import WorkflowSelector from './WorkflowSelector';
+import InitialSetup from './InitialSetup';
+import BrowserMonitor from './BrowserMonitor';
+import SimpleBrowserControl from './SimpleBrowserControl';
 // import N8nLogs from './N8nLogs';
 import n8nMonitorService from '../services/n8nMonitorService';
 
@@ -34,6 +37,17 @@ const ChatBox = () => {
   const [showWorkflowSelector, setShowWorkflowSelector] = useState(false);
   const [selectedWorkflow, setSelectedWorkflow] = useState(null);
   const [workflowConfigured, setWorkflowConfigured] = useState(false);
+  
+  // Initial Setup states
+  const [showInitialSetup, setShowInitialSetup] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+  
+  // Browser Monitor states
+  const [showBrowserMonitor, setShowBrowserMonitor] = useState(false);
+  const [browserMonitorData, setBrowserMonitorData] = useState(null);
+  
+  // Simple Browser Control states
+  const [showSimpleBrowserControl, setShowSimpleBrowserControl] = useState(false);
 
   const instructions = useMemo(() => [
     {
@@ -118,43 +132,10 @@ const ChatBox = () => {
     }
   }, []);
 
-  // Check for saved API configuration on mount
+  // Siempre mostrar setup inicial - no usar localStorage
   useEffect(() => {
-    const savedToken = localStorage.getItem('n8n_api_token');
-    const savedUrl = localStorage.getItem('n8n_base_url');
-    const savedWorkflowId = localStorage.getItem('selected_workflow_id');
-    const savedWorkflowName = localStorage.getItem('selected_workflow_name');
-    
-    if (savedToken && savedUrl) {
-      const config = { n8nApiToken: savedToken, n8nBaseUrl: savedUrl };
-      setApiConfig(config);
-      setApiConfigured(true);
-      
-      // Send saved configuration to backend
-      console.log('🔄 Enviando configuración guardada al backend...');
-      if (window.WebSocket && n8nMonitorService) {
-        n8nMonitorService.updateApiConfig(config);
-      }
-      
-      // Check if workflow is also configured
-      if (savedWorkflowId && savedWorkflowName) {
-        setSelectedWorkflow({ 
-          id: savedWorkflowId, 
-          name: savedWorkflowName 
-        });
-        setWorkflowConfigured(true);
-      } else {
-        // API configured but no workflow selected - wait for backend config to apply
-        console.log('⏳ Esperando configuración del backend...');
-        setTimeout(() => {
-          setShowWorkflowSelector(true);
-        }, 2000); // Increased wait time for backend config
-      }
-    } else {
-      // No API configuration
-      console.log('🔐 No hay configuración guardada, mostrando modal de configuración');
-      setShowApiConfig(true);
-    }
+    console.log('🔐 Mostrando setup inicial - sin localStorage');
+    setShowInitialSetup(true);
   }, []);
 
   // API Configuration handlers
@@ -168,14 +149,10 @@ const ChatBox = () => {
       n8nMonitorService.updateApiConfig(config);
     }
     
-    // After API is configured, show workflow selector if no workflow is selected
-    const savedWorkflowId = localStorage.getItem('selected_workflow_id');
-    if (!savedWorkflowId) {
-      // Wait a moment for the API config to propagate to the backend
-      setTimeout(() => {
-        setShowWorkflowSelector(true);
-      }, 1000);
-    }
+    // No usar localStorage - siempre mostrar workflow selector después de configurar API
+    setTimeout(() => {
+      setShowWorkflowSelector(true);
+    }, 1000);
   }, []);
 
   const handleOpenApiConfig = useCallback(() => {
@@ -215,6 +192,18 @@ const ChatBox = () => {
     setShowWorkflowSelector(true);
   }, []);
 
+  const handleOpenBrowserMonitor = useCallback(() => {
+    setShowBrowserMonitor(true);
+  }, []);
+
+  const handleOpenSimpleBrowserControl = useCallback(() => {
+    setShowSimpleBrowserControl(true);
+  }, []);
+
+  const handleCloseSimpleBrowserControl = useCallback(() => {
+    setShowSimpleBrowserControl(false);
+  }, []);
+
   // Toggle real-time monitoring
   const handleToggleMonitoring = useCallback(() => {
     if (isMonitoring) {
@@ -226,34 +215,97 @@ const ChatBox = () => {
     }
   }, [isMonitoring]);
 
-  // Initialize n8n Monitor connection
+  // Initialize n8n if configuration is complete
   useEffect(() => {
-    const initializeN8n = async () => {
-      setN8nLoading(true);
-      try {
-        // Set up callbacks
-        // n8nMonitorService.setLogCallback(handleN8nLog);
-        n8nMonitorService.setStatusCallback(handleN8nStatus);
-        
-        // Test connection
-        const workflow = await n8nMonitorService.getWorkflowDetails();
-        if (workflow) {
-          setN8nConnected(true);
-          setCurrentWorkflow(workflow);
-          console.log('n8n Monitor: Connected successfully');
-        } else {
-          setN8nError('No se pudo conectar al workflow');
-        }
-      } catch (err) {
-        setN8nError('Failed to initialize n8n Monitor connection');
-        console.error('n8n Monitor Init Error:', err);
-      } finally {
-        setN8nLoading(false);
-      }
-    };
+    if (apiConfigured && workflowConfigured) {
+      setIsInitialized(true);
+      initializeN8n();
+    }
+  }, [apiConfigured, workflowConfigured]);
 
-    initializeN8n();
-  }, [handleN8nStatus]);
+  // Initialize n8n Monitor connection
+  const initializeN8n = async () => {
+    setN8nLoading(true);
+    setN8nError(''); // Limpiar errores previos
+    
+    try {
+      // Set up callbacks
+      // n8nMonitorService.setLogCallback(handleN8nLog);
+      n8nMonitorService.setStatusCallback(handleN8nStatus);
+      
+      // Test connection
+      const workflow = await n8nMonitorService.getWorkflowDetails();
+      if (workflow) {
+        setN8nConnected(true);
+        setCurrentWorkflow(workflow);
+        console.log('n8n Monitor: Connected successfully');
+      } else {
+        setN8nError('No se pudo conectar al workflow');
+      }
+    } catch (err) {
+      setN8nError('Failed to initialize n8n Monitor connection');
+      console.error('n8n Monitor Init Error:', err);
+    } finally {
+      setN8nLoading(false);
+    }
+  };
+
+  // Handle initial setup completion
+  const handleInitialSetupComplete = useCallback((config) => {
+    console.log('✅ Setup inicial completado:', config);
+    setShowInitialSetup(false);
+    setIsInitialized(true);
+    setApiConfigured(true);
+    setWorkflowConfigured(true);
+    setSelectedWorkflow(config.workflow);
+    
+    // Initialize n8n connection after setup
+    setTimeout(() => {
+      initializeN8n();
+    }, 1000);
+  }, []);
+
+  // Handle browser monitor data
+  const handleBrowserMonitorData = useCallback((data) => {
+    console.log('📊 Datos del monitor de navegador:', data);
+    setBrowserMonitorData(data);
+    
+    // Procesar acciones del usuario para actualizar la guía
+    if (data.type === 'user_action') {
+      processUserAction(data.action);
+    }
+  }, []);
+
+  // Process user actions from browser monitor
+  const processUserAction = useCallback((action) => {
+    console.log('🎯 Procesando acción del usuario:', action);
+    
+    // Actualizar instrucciones basado en las acciones del usuario
+    switch (action.type) {
+      case 'workflow_created':
+        // El usuario creó un workflow - avanzar al siguiente paso
+        console.log('✅ Usuario creó un workflow - avanzando al siguiente paso');
+        break;
+        
+      case 'node_added':
+        // El usuario agregó un nodo - verificar si es el correcto
+        console.log('✅ Usuario agregó un nodo - verificando tipo');
+        break;
+        
+      case 'workflow_activated':
+        // El usuario activó el workflow - paso completado
+        console.log('✅ Usuario activó el workflow - paso completado');
+        break;
+        
+      case 'n8n_navigation':
+        // El usuario navegó a una sección específica
+        console.log('✅ Usuario navegó a:', action.data.section);
+        break;
+        
+      default:
+        console.log('📝 Acción registrada:', action.type);
+    }
+  }, []);
 
   // Handle exercise actions
   const handleExerciseAction = useCallback(async (exercise) => {
@@ -462,22 +514,25 @@ const ChatBox = () => {
 
   return (
     <div className="flex flex-col h-full bg-gray-900 rounded-lg shadow-xl">
-      <ChatHeader 
-        isSpeaking={isSpeaking} 
-        onStopSpeaking={stopSpeaking} 
-        onTestAudio={testAudio}
-        n8nConnected={n8nConnected}
-        n8nLoading={n8nLoading}
-        onConnectN8n={connectN8n}
-        isMonitoring={isMonitoring}
-        onToggleMonitoring={handleToggleMonitoring}
-        onReconnect={handleReconnect}
-        apiConfigured={apiConfigured}
-        onOpenApiConfig={handleOpenApiConfig}
-        workflowConfigured={workflowConfigured}
-        selectedWorkflow={selectedWorkflow}
-        onOpenWorkflowSelector={handleOpenWorkflowSelector}
-      />
+              <ChatHeader 
+          isSpeaking={isSpeaking} 
+          onStopSpeaking={stopSpeaking} 
+          onTestAudio={testAudio}
+          n8nConnected={n8nConnected}
+          n8nLoading={n8nLoading}
+          onConnectN8n={connectN8n}
+          isMonitoring={isMonitoring}
+          onToggleMonitoring={handleToggleMonitoring}
+          onReconnect={handleReconnect}
+          apiConfigured={apiConfigured}
+          onOpenApiConfig={handleOpenApiConfig}
+          workflowConfigured={workflowConfigured}
+          selectedWorkflow={selectedWorkflow}
+          onOpenWorkflowSelector={handleOpenWorkflowSelector}
+          isInitialized={isInitialized}
+          onOpenBrowserMonitor={handleOpenBrowserMonitor}
+          onOpenSimpleBrowserControl={handleOpenSimpleBrowserControl}
+        />
       
       <div className="flex-1"> {/* This div now takes full width */}
         <ChatContent 
@@ -492,6 +547,7 @@ const ChatBox = () => {
           n8nError={n8nError}
           currentWorkflow={currentWorkflow}
           workflowStatus={workflowStatus}
+          isInitialized={isInitialized}
         />
         
         {/* n8n Logs Section - Oculto */}
@@ -503,6 +559,13 @@ const ChatBox = () => {
         instructions={instructions} 
         isSpeaking={isSpeaking} 
       />
+      
+      {showInitialSetup && (
+        <InitialSetup
+          onSetupComplete={handleInitialSetupComplete}
+          onOpenSimpleBrowserControl={handleOpenSimpleBrowserControl}
+        />
+      )}
       
       {showApiConfig && (
         <ApiConfig
@@ -516,6 +579,19 @@ const ChatBox = () => {
           onWorkflowSelected={handleWorkflowSelected}
           onClose={() => setShowWorkflowSelector(false)}
           apiConfig={apiConfig}
+        />
+      )}
+      
+      {showBrowserMonitor && (
+        <BrowserMonitor
+          onDataReceived={handleBrowserMonitorData}
+          onClose={() => setShowBrowserMonitor(false)}
+        />
+      )}
+
+      {showSimpleBrowserControl && (
+        <SimpleBrowserControl
+          onClose={handleCloseSimpleBrowserControl}
         />
       )}
     </div>

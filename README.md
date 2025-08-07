@@ -1,165 +1,138 @@
-# Sistema de Monitoreo n8n en Tiempo Real
+# 🎓 N8N Teacher App - Super App de Aprendizaje
 
-Este proyecto proporciona un sistema completo de monitoreo en tiempo real para n8n, con una aplicación React como frontend y un servidor Node.js como backend.
+## 🚀 Arquitectura de la Super App
 
-## 🏗️ Arquitectura
+Esta es una **super app educativa** que combina:
+
+1. **🎯 ChatBox**: La guía principal que dirige el aprendizaje paso a paso
+2. **🌐 BrowserMonitor**: Los "ojos" que ven lo que hace el usuario en n8n
+3. **🔧 API n8n**: Monitoreo tradicional de workflows y ejecuciones
+4. **⚛️ Frontend React**: Interfaz moderna y responsiva
+
+### 🎯 Flujo de Aprendizaje
 
 ```
-┌─────────────────┐    WebSocket    ┌─────────────────┐    HTTP API    ┌─────────────┐
-│   React App     │ ◄─────────────► │  Node.js Server │ ◄────────────► │    n8n      │
-│   (Frontend)    │                 │   (Backend)     │                │  Instance   │
-└─────────────────┘                 └─────────────────┘                └─────────────┘
+Usuario → BrowserMonitor (ve acciones) → ChatBox (interpreta y guía) → Usuario
 ```
+
+- **BrowserMonitor**: Abre n8n en Chrome y detecta todas las acciones del usuario
+- **ChatBox**: Procesa esas acciones y proporciona guía personalizada
+- **API n8n**: Complementa con datos de workflows y ejecuciones
+- **Resultado**: Experiencia de aprendizaje interactiva y guiada
+
+### 1. Limpiar Configuración (Si es necesario)
+
+Si quieres empezar desde cero:
+
+```bash
+# Limpiar configuración
+cd /Users/wavesmanagement/scripts/new/n8n-teacher-app
+node clear-config.js
+
+# O manualmente en el navegador:
+# 1. Abre F12 (herramientas de desarrollador)
+# 2. Ve a Application → Local Storage
+# 3. Haz clic derecho en http://localhost:3000 → Clear
+# 4. O ejecuta en la consola: localStorage.clear()
+```
+
+### 2. Iniciar la Aplicación
+
+```bash
+# Instalar dependencias
+cd /Users/wavesmanagement/scripts/new/n8n-teacher-app
+npm install
+
+cd /Users/wavesmanagement/scripts/new/n8n-teacher-app/server
+npm install
+
+# Iniciar servidores
+cd /Users/wavesmanagement/scripts/new/n8n-teacher-app
+npm start
+
+# En otra terminal
+cd /Users/wavesmanagement/scripts/new/n8n-teacher-app/server
+npm start
+```
+
+### 3. Configuración Inicial (Primera Vez)
+
+Cuando abras la aplicación por primera vez, verás:
+
+1. **🔧 Paso 1: Configurar Token de n8n**
+   - Ingresa la URL de tu instancia de n8n
+   - Pega tu token de API de n8n
+   - La app validará la conexión automáticamente
+
+2. **📋 Paso 2: Seleccionar Workflow**
+   - La app cargará todos tus workflows disponibles
+   - Selecciona el workflow que quieres monitorear
+   - ¡Listo! La app comenzará a monitorear
 
 ## 🚀 Inicio Rápido
 
 ### Opción 1: Script Automático (Recomendado)
+
 ```bash
-./start-monitoring.sh
+# Iniciar todos los servicios automáticamente
+cd /Users/wavesmanagement/scripts/new/n8n-teacher-app
+./start-all-services.sh
 ```
 
 ### Opción 2: Inicio Manual
 
-1. **Iniciar el servidor de monitoreo:**
 ```bash
-cd server
-npm install
-node server.js
-```
+# 1. Backend n8n
+cd /Users/wavesmanagement/scripts/new/n8n-teacher-app/server
+npm start
 
-2. **Iniciar la aplicación React:**
-```bash
-npm install
+# 2. Browser Monitor (en nueva terminal)
+cd /Users/wavesmanagement/scripts/new/n8n-teacher-app/browser-monitor
+pip install -r requirements.txt
+python3 browser_monitor.py
+
+# 3. Frontend React (en nueva terminal)
+cd /Users/wavesmanagement/scripts/new/n8n-teacher-app
 npm start
 ```
 
-## 📊 Características
+## 🎯 Cómo Usar la Super App
 
-### Backend (Node.js + WebSocket)
-- ✅ **Monitoreo en tiempo real** de workflows y ejecuciones
-- ✅ **WebSocket** para actualizaciones instantáneas
-- ✅ **API REST** para control del monitoreo
-- ✅ **Reconexión automática** en caso de desconexión
-- ✅ **Logs detallados** de todas las actividades
+1. **Abre** http://localhost:3000
+2. **Configura** tu token de n8n en la experiencia de primera vez
+3. **Haz clic** en "🎓 Monitor" para abrir el monitor de navegador
+4. **Sigue** las instrucciones del ChatBox paso a paso
+5. **El BrowserMonitor** verá tus acciones y el ChatBox te guiará
 
-### Frontend (React)
-- ✅ **Interfaz moderna** con modo oscuro
-- ✅ **Logs en tiempo real** con diferentes tipos (info, success, error, warning)
-- ✅ **Control de monitoreo** con botones de inicio/parada
-- ✅ **Estado de conexión** visual
-- ✅ **Responsive design** para móviles
+## 📱 URLs de la Aplicación
 
-## 🔧 Configuración
+- **🌐 Frontend**: http://localhost:3000
+- **🔧 Backend**: http://localhost:3001  
+- **🎓 Browser Monitor**: http://localhost:3004
+- **🌐 n8n**: http://localhost:5678
 
-### Token de API n8n
-El token de API está configurado en `server/server.js`:
-```javascript
-const N8N_API_TOKEN = 'tu-token-aqui';
-```
+## Variables de Entorno
 
-### URLs
-- **Frontend:** http://localhost:3000
-- **Backend:** http://localhost:3001
-- **WebSocket:** ws://localhost:3001
+La aplicación usa las siguientes variables de entorno (archivo `.env`):
 
-## 📋 Endpoints del Servidor
+- `N8N_API_TOKEN` - Tu token de API de n8n
+- `N8N_WORKFLOW_ID` - ID del workflow a monitorear
+- `N8N_BASE_URL` - URL base de la API de n8n
 
-### API REST
-- `GET /health` - Estado del servidor
-- `GET /api/status` - Estado del monitoreo
-- `POST /api/monitoring/start` - Iniciar monitoreo
-- `POST /api/monitoring/stop` - Detener monitoreo
+## Ventajas de esta estructura:
 
-### WebSocket
-- `start_monitoring` - Iniciar monitoreo
-- `stop_monitoring` - Detener monitoreo
-- `get_status` - Obtener estado actual
+✅ **Experiencia intuitiva** - Guía paso a paso para primera vez
+✅ **Una sola fuente de verdad** - Todas las configuraciones en un lugar
+✅ **Fácil actualización** - Un comando para cambiar el token
+✅ **Sin sincronización** - No más problemas de tokens desactualizados
+✅ **Seguridad** - Token no hardcodeado en el código
+✅ **Flexibilidad** - Fácil cambiar workflow o URL
+✅ **Limpieza fácil** - Script para empezar desde cero
 
-## 🔍 Monitoreo
+## URLs de la Aplicación
 
-El sistema monitorea:
+- **Frontend**: http://localhost:3000
+- **Servidor**: http://localhost:3001
 
-1. **Workflows**
-   - Nuevos workflows creados
-   - Cambios en workflows existentes
-   - Eliminación de workflows
-
-2. **Ejecuciones**
-   - Nuevas ejecuciones de workflows
-   - Estado de ejecuciones (success, error, running)
-   - Tiempo de inicio y fin
-
-3. **Logs en tiempo real**
-   - Información detallada de cada evento
-   - Timestamps precisos
-   - Diferentes niveles de log
-
-## 🎯 Uso
-
-1. **Inicia el sistema** usando el script automático
-2. **Abre la aplicación** en http://localhost:3000
-3. **Haz clic en "Conectar n8n"** para iniciar el monitoreo
-4. **Ve a tu instancia de n8n** y crea/modifica workflows
-5. **Observa los logs** aparecer en tiempo real en la aplicación
-
-## 🛠️ Desarrollo
-
-### Estructura del Proyecto
-```
-dummy/
-├── src/
-│   ├── components/
-│   │   ├── ChatBox.js          # Componente principal
-│   │   ├── ChatHeader.js       # Header con controles
-│   │   ├── ChatContent.js      # Contenido del chat
-│   │   ├── ChatFooter.js       # Footer con progreso
-│   │   └── N8nLogs.js         # Componente de logs
-│   └── services/
-│       └── n8nWebSocket.js    # Servicio WebSocket
-├── server/
-│   ├── server.js              # Servidor Node.js
-│   └── package.json           # Dependencias del servidor
-├── package.json               # Dependencias del frontend
-└── start-monitoring.sh       # Script de inicio
-```
-
-### Tecnologías Utilizadas
-- **Frontend:** React, Tailwind CSS, WebSocket
-- **Backend:** Node.js, Express, WebSocket, Axios
-- **Monitoreo:** Polling inteligente, detección de cambios
-
-## 🔧 Troubleshooting
-
-### El servidor no inicia
-```bash
-# Verificar puerto disponible
-lsof -i :3001
-
-# Verificar dependencias
-cd server && npm install
-```
-
-### WebSocket no conecta
-```bash
-# Verificar que el servidor esté corriendo
-curl http://localhost:3001/health
-
-# Verificar logs del servidor
-tail -f server/logs.txt
-```
-
-### No aparecen logs
-1. Verifica que el token de API sea correcto
-2. Asegúrate de que n8n esté accesible
-3. Revisa la consola del navegador para errores
-
-## 📝 Logs
-
-Los logs se muestran en:
-- **Consola del servidor:** Terminal donde corre `node server.js`
-- **Consola del navegador:** F12 → Console
-- **Interfaz web:** Sección de logs en la aplicación
-
-## 🎉 ¡Listo!
-
-El sistema está configurado para proporcionar monitoreo en tiempo real de tu instancia de n8n. ¡Disfruta viendo tus workflows y ejecuciones en tiempo real! 
+### Nota
+Asegúrate de tener Node.js instalado en tu sistema antes de ejecutar estos comandos. 

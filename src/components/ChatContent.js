@@ -11,15 +11,16 @@ const ChatContent = ({
   n8nLoading,
   n8nError,
   currentWorkflow,
-  workflowStatus
+  workflowStatus,
+  isInitialized
 }) => {
   return (
     <div className="flex-1 p-4 bg-gray-900">
       <div className={`transition-opacity duration-500 h-full ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
         <div className="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700 h-full flex flex-col">
           
-          {/* n8n Connection Banner */}
-          {n8nConnected && (
+          {/* n8n Connection Banner - Solo mostrar si está inicializado */}
+          {isInitialized && n8nConnected && (
             <div className="mb-4 p-4 bg-green-900 border border-green-700 rounded-lg">
               <div className="flex items-center space-x-3">
                 <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
@@ -36,8 +37,8 @@ const ChatContent = ({
             </div>
           )}
 
-          {/* n8n Loading Banner */}
-          {n8nLoading && (
+          {/* n8n Loading Banner - Solo mostrar si está inicializado */}
+          {isInitialized && n8nLoading && (
             <div className="mb-4 p-4 bg-yellow-900 border border-yellow-700 rounded-lg">
               <div className="flex items-center space-x-3">
                 <div className="animate-spin rounded-full h-4 w-4 border-b border-yellow-400"></div>
@@ -51,8 +52,8 @@ const ChatContent = ({
             </div>
           )}
 
-          {/* n8n Manual Connection Prompt */}
-          {!n8nConnected && !n8nLoading && !n8nError && (
+          {/* n8n Manual Connection Prompt - Solo mostrar si está inicializado */}
+          {isInitialized && !n8nConnected && !n8nLoading && !n8nError && (
             <div className="mb-4 p-4 bg-blue-900 border border-blue-700 rounded-lg">
               <div className="flex items-center space-x-3">
                 <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
@@ -75,8 +76,8 @@ const ChatContent = ({
             </div>
           )}
 
-          {/* n8n Error Banner */}
-          {n8nError && (
+          {/* n8n Error Banner - Solo mostrar si está inicializado */}
+          {isInitialized && n8nError && (
             <div className="mb-4 p-4 bg-red-900 border border-red-700 rounded-lg">
               <div className="flex items-center space-x-3">
                 <div className="w-3 h-3 bg-red-400 rounded-full"></div>
@@ -91,8 +92,8 @@ const ChatContent = ({
             </div>
           )}
 
-          {/* CORS Error Banner */}
-          {n8nError && n8nError.includes('CORS') && (
+          {/* CORS Error Banner - Solo mostrar si está inicializado */}
+          {isInitialized && n8nError && n8nError.includes('CORS') && (
             <div className="mb-4 p-4 bg-orange-900 border border-orange-700 rounded-lg">
               <div className="flex items-center space-x-3">
                 <div className="w-3 h-3 bg-orange-400 rounded-full"></div>

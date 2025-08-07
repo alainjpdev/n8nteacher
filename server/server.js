@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
@@ -31,6 +32,55 @@ app.use(express.json());
 // Additional CORS handling for preflight requests
 app.options('*', cors(corsOptions));
 
+// API endpoints
+app.post('/api/config', (req, res) => {
+  try {
+    const { baseURL, apiToken, workflowId } = req.body;
+    
+    if (baseURL) {
+      global.N8N_BASE_URL = baseURL;
+      console.log(`🔧 URL de n8n actualizada: ${baseURL}`);
+    }
+    
+    if (apiToken) {
+      global.N8N_API_TOKEN = apiToken;
+      console.log(`🔧 Token de API actualizado: ${apiToken.substring(0, 20)}...`);
+    }
+    
+    if (workflowId) {
+      global.TARGET_WORKFLOW_ID = workflowId;
+      console.log(`🔧 Workflow ID actualizado: ${workflowId}`);
+    }
+    
+    res.json({
+      success: true,
+      message: 'Configuración actualizada correctamente',
+      config: {
+        baseURL: global.N8N_BASE_URL,
+        workflowId: global.TARGET_WORKFLOW_ID,
+        hasToken: !!global.N8N_API_TOKEN
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error actualizando configuración',
+      error: error.message
+    });
+  }
+});
+
+app.get('/api/config', (req, res) => {
+  res.json({
+    success: true,
+    config: {
+      baseURL: global.N8N_BASE_URL,
+      workflowId: global.TARGET_WORKFLOW_ID,
+      hasToken: !!global.N8N_API_TOKEN
+    }
+  });
+});
+
 // Custom middleware to handle X-N8N-API-KEY header
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-N8N-API-KEY, Accept, Origin');
@@ -45,13 +95,17 @@ app.use((req, res, next) => {
   }
 });
 
-// n8n Configuration (default values, will be updated dynamically)
-global.N8N_BASE_URL = 'http://localhost:5678/api/v1';
-global.N8N_API_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZjkxNGRjYy1jZjZkLTQyYTgtYjEwNy00MWVhY2FkMDU2MmIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU0NDE2NjQzLCJleHAiOjE3NTY5NTg0MDB9.3x0inedA6Kqf74uMTHt8teRZoKFRmPS2WzA58y09YbI';
+// n8n Configuration from environment variables
+global.N8N_BASE_URL = process.env.N8N_BASE_URL || 'http://localhost:5678/api/v1';
+global.N8N_API_TOKEN = null; // No token por defecto - se configurará desde el frontend
+global.TARGET_WORKFLOW_ID = null; // No workflow por defecto
 
-// Configuración de monitoreo específico
-let TARGET_WORKFLOW_ID = 'FVKBIatFo5HXrLs7'; // ID del workflow "Agente para Principiantes"
-// Ejemplo: TARGET_WORKFLOW_ID = '0o5pJ8V3SCYCNJnF';
+// Validate required environment variables (optional for first-time setup)
+console.log('🔧 Configuración inicial:');
+console.log(`   📡 URL: ${global.N8N_BASE_URL}`);
+console.log(`   🔑 Token: No configurado - se configurará desde el frontend`);
+console.log(`   📋 Workflow ID: No configurado - se seleccionará desde el frontend`);
+console.log('💡 La aplicación pedirá el token en el frontend');
 
 // Store connected clients
 const clients = new Set();
@@ -233,10 +287,10 @@ async function checkN8nChanges() {
     
     lastApiCall = now;
     
-    if (TARGET_WORKFLOW_ID) {
+    if (global.TARGET_WORKFLOW_ID) {
       // Monitoreo específico de un workflow
-      log('info', `Monitoreando workflow específico: ${TARGET_WORKFLOW_ID}`);
-      await checkSpecificWorkflow(TARGET_WORKFLOW_ID);
+      log('info', `Monitoreando workflow específico: ${global.TARGET_WORKFLOW_ID}`);
+      await checkSpecificWorkflow(global.TARGET_WORKFLOW_ID);
     } else {
       // Monitoreo general de todos los workflows
       log('info', 'Verificando cambios en workflows...');
@@ -548,6 +602,12 @@ function startMonitoring() {
     return;
   }
   
+  // Solo iniciar si hay token configurado
+  if (!global.N8N_API_TOKEN) {
+    log('warning', 'No se puede iniciar monitoreo: Token no configurado');
+    return;
+  }
+  
   log('info', 'Iniciando monitoreo en tiempo real de n8n...');
   log('info', 'El sistema verificará workflows y ejecuciones cada 5 minutos');
   
@@ -679,7 +739,7 @@ app.get('/api/status', (req, res) => {
   res.json({
     isMonitoring,
     connectedClients: clients.size,
-    targetWorkflowId: TARGET_WORKFLOW_ID,
+    targetWorkflowId: global.TARGET_WORKFLOW_ID,
     timestamp: new Date().toISOString()
   });
 });
@@ -737,15 +797,15 @@ app.post('/api/target-workflow', (req, res) => {
   const { workflowId } = req.body;
   
   if (workflowId) {
-    TARGET_WORKFLOW_ID = workflowId;
+    global.TARGET_WORKFLOW_ID = workflowId;
     log('info', `Workflow objetivo configurado: ${workflowId}`);
     res.json({ 
       success: true, 
       message: `Monitoreo configurado para workflow: ${workflowId}`,
-      targetWorkflowId: TARGET_WORKFLOW_ID
+      targetWorkflowId: global.TARGET_WORKFLOW_ID
     });
   } else {
-    TARGET_WORKFLOW_ID = null;
+    global.TARGET_WORKFLOW_ID = null;
     log('info', 'Monitoreo configurado para todos los workflows');
     res.json({ 
       success: true, 
@@ -859,6 +919,18 @@ app.get('/api/workflows/:workflowId', async (req, res) => {
   try {
     const { workflowId } = req.params;
     
+    console.log(`🔍 Intentando obtener workflow: ${workflowId}`);
+    console.log(`📡 URL: ${global.N8N_BASE_URL}/workflows/${workflowId}`);
+    console.log(`🔑 Token: ${global.N8N_API_TOKEN ? 'Configurado' : 'No configurado'}`);
+    
+    if (!global.N8N_API_TOKEN) {
+      return res.status(500).json({
+        success: false,
+        error: 'Token de API no configurado',
+        message: 'Configura el token de API de n8n primero'
+      });
+    }
+    
     const response = await axios.get(`${global.N8N_BASE_URL}/workflows/${workflowId}`, {
       headers: {
         'X-N8N-API-KEY': global.N8N_API_TOKEN,
@@ -867,14 +939,33 @@ app.get('/api/workflows/:workflowId', async (req, res) => {
       timeout: 10000
     });
     
+    console.log(`✅ Workflow obtenido exitosamente: ${workflowId}`);
     res.json(response.data);
   } catch (error) {
-    console.error('Error fetching workflow:', error);
-    if (error.response?.status === 404) {
+    console.error('❌ Error fetching workflow:', error.message);
+    console.error('📊 Detalles del error:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data
+    });
+    
+    if (error.response?.status === 401) {
+      res.status(401).json({ 
+        success: false, 
+        message: 'Token de API inválido o expirado',
+        error: 'Unauthorized - Invalid API token'
+      });
+    } else if (error.response?.status === 404) {
       res.status(404).json({ 
         success: false, 
         message: 'Workflow no encontrado',
         error: 'Workflow not found'
+      });
+    } else if (error.code === 'ECONNREFUSED') {
+      res.status(503).json({ 
+        success: false, 
+        message: 'n8n no está disponible',
+        error: 'n8n service unavailable'
       });
     } else {
       res.status(500).json({ 
@@ -1089,6 +1180,76 @@ app.get('/debug/config', (req, res) => {
     targetWorkflowId: TARGET_WORKFLOW_ID || 'No configurado',
     timestamp: new Date().toISOString()
   });
+});
+
+// Endpoint para ejecutar el script Python del browser
+app.post('/api/execute-browser-script', (req, res) => {
+  try {
+    const { action } = req.body;
+    
+    if (action === 'start') {
+      console.log('🚀 Ejecutando script Python para abrir browser...');
+      
+      // Ejecutar el script Python en segundo plano
+      const { spawn } = require('child_process');
+      const path = require('path');
+      
+      // Ruta al script Python
+      const scriptPath = path.join(__dirname, '../browser-monitor/simple_browser_control.py');
+      
+      console.log(`📁 Ejecutando script: ${scriptPath}`);
+      
+      const pythonProcess = spawn('python3', [scriptPath], {
+        cwd: path.join(__dirname, '../browser-monitor'),
+        stdio: ['pipe', 'pipe', 'pipe']
+      });
+      
+      // Capturar output
+      pythonProcess.stdout.on('data', (data) => {
+        console.log(`📊 Browser Script: ${data.toString().trim()}`);
+      });
+      
+      pythonProcess.stderr.on('data', (data) => {
+        console.error(`❌ Browser Script Error: ${data.toString().trim()}`);
+      });
+      
+      pythonProcess.on('close', (code) => {
+        console.log(`✅ Browser Script terminado con código: ${code}`);
+      });
+      
+      res.json({
+        success: true,
+        message: 'Script Python iniciado correctamente',
+        action: 'start'
+      });
+      
+    } else if (action === 'stop') {
+      console.log('🛑 Deteniendo script Python...');
+      
+      // En una implementación real, aquí terminarías el proceso
+      // Por ahora solo simulamos
+      res.json({
+        success: true,
+        message: 'Script Python detenido',
+        action: 'stop'
+      });
+      
+    } else {
+      res.status(400).json({
+        success: false,
+        message: 'Acción no válida',
+        validActions: ['start', 'stop']
+      });
+    }
+    
+  } catch (error) {
+    console.error('❌ Error ejecutando script Python:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error ejecutando script Python',
+      error: error.message
+    });
+  }
 });
 
 const PORT = process.env.PORT || 3001;

@@ -8,12 +8,8 @@ const ApiConfig = ({ onApiConfigured, onClose }) => {
   const [isValid, setIsValid] = useState(false);
 
   useEffect(() => {
-    // Cargar configuración guardada
-    const savedToken = localStorage.getItem('n8n_api_token');
-    const savedUrl = localStorage.getItem('n8n_base_url');
-    
-    if (savedToken) setApiToken(savedToken);
-    if (savedUrl) setN8nUrl(savedUrl);
+    // No cargar configuración guardada - siempre empezar desde cero
+    console.log('🔐 ApiConfig: Iniciando desde cero - sin localStorage');
   }, []);
 
   const validateConnection = async () => {
@@ -44,9 +40,8 @@ const ApiConfig = ({ onApiConfigured, onClose }) => {
         setIsValid(true);
         setValidationMessage('¡Conexión exitosa! Token válido.');
         
-        // Guardar configuración
-        localStorage.setItem('n8n_api_token', apiToken);
-        localStorage.setItem('n8n_base_url', n8nUrl);
+        // No guardar en localStorage - mantener en memoria solo
+        console.log('✅ ApiConfig: Configuración validada - no guardando en localStorage');
         
         // Notificar al componente padre
         setTimeout(() => {

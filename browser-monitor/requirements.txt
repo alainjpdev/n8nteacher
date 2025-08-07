@@ -1,0 +1,12 @@
+# Browser Monitor Dependencies
+selenium==4.15.2
+webdriver-manager==4.0.1
+flask==2.3.3
+flask-cors==4.0.0
+websockets==11.0.3
+python-dotenv==1.0.0
+psutil==5.9.6
+pillow==10.0.1
+psycopg2-binary==2.9.9
+scikit-learn==1.3.2
+matplotlib==3.8.2

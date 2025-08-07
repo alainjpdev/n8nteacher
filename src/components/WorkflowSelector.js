@@ -35,11 +35,8 @@ const WorkflowSelector = ({ onWorkflowSelected, onClose, apiConfig }) => {
         setWorkflows(result.workflows || []);
         console.log(`✅ ${result.workflows?.length || 0} workflows encontrados`);
         
-        // Si hay un workflow guardado previamente, seleccionarlo
-        const savedWorkflowId = localStorage.getItem('selected_workflow_id');
-        if (savedWorkflowId && result.workflows.find(w => w.id === savedWorkflowId)) {
-          setSelectedWorkflow(savedWorkflowId);
-        }
+        // No cargar workflow guardado - siempre empezar desde cero
+        console.log('🔐 WorkflowSelector: Iniciando desde cero - sin localStorage');
       } else {
         // Si hay un error que indica que necesita configuración, mostrar mensaje específico
         if (result.needsConfig) {
@@ -73,9 +70,8 @@ const WorkflowSelector = ({ onWorkflowSelected, onClose, apiConfig }) => {
       return;
     }
 
-    // Guardar selección
-    localStorage.setItem('selected_workflow_id', selectedWorkflow);
-    localStorage.setItem('selected_workflow_name', workflow.name);
+    // No guardar en localStorage - mantener en memoria solo
+    console.log('✅ WorkflowSelector: Workflow seleccionado - no guardando en localStorage');
 
     // Notificar al componente padre
     onWorkflowSelected({
