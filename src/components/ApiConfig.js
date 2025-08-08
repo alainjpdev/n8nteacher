@@ -63,12 +63,13 @@ const ApiConfig = ({ onApiConfigured, onClose }) => {
       <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">
         📝 Cómo obtener tu token de API de n8n:
       </h4>
-      <ol className="text-sm text-blue-700 dark:text-blue-300 list-decimal list-inside space-y-1">
-        <li>Abre n8n en: <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">{n8nUrl}</code></li>
-        <li>Ve a <strong>Settings</strong> → <strong>API</strong></li>
-        <li>Haz clic en <strong>"Create API Key"</strong></li>
-        <li>Copia el token generado y pégalo aquí</li>
-      </ol>
+              <ol className="text-sm text-blue-700 dark:text-blue-300 list-decimal list-inside space-y-1">
+          <li>Realiza login en n8n desde el navegador que acaba de abrir</li>
+          <li>Dirígete a los tres puntos que se encuentran en la parte inferior izquierda junto a tu nombre de usuario → <strong>Settings</strong></li>
+          <li>Haz clic en <strong>"n8n API"</strong></li>
+          <li>Luego presiona <strong>"Create an API key"</strong></li>
+          <li>Crea una API key con todos los permisos y salvas</li>
+        </ol>
     </div>
   );
 

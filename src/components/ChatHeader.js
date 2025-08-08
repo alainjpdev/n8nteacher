@@ -1,54 +1,62 @@
 import React from 'react';
 
-const ChatHeader = ({ isSpeaking, onStopSpeaking, onTestAudio, n8nConnected, n8nLoading, onConnectN8n, isMonitoring, onToggleMonitoring, onReconnect, apiConfigured, onOpenApiConfig, workflowConfigured, selectedWorkflow, onOpenWorkflowSelector, isInitialized, onOpenBrowserMonitor, onOpenSimpleBrowserControl }) => {
+const ChatHeader = ({ isSpeaking, onStopSpeaking, onTestAudio, n8nConnected, n8nLoading, onConnectN8n, isMonitoring, onToggleMonitoring, onReconnect, apiConfigured, onOpenApiConfig, workflowConfigured, selectedWorkflow, onOpenWorkflowSelector, isInitialized, onOpenBrowserMonitor, onOpenSimpleBrowserControl, onOpenExerciseManager, onOpenServerStatus, onOpenTriggersWorkflow, onOpenInitialSetup }) => {
   return (
     <div className="bg-gray-800 border-b border-gray-700 p-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
 
-
-          {/* Audio Test Button */}
+          {/* Start Button - Empezar */}
           <button 
-            onClick={onTestAudio}
-            className="px-4 py-2 rounded-lg text-sm font-medium bg-green-600 text-white hover:bg-green-700 transition-all duration-300"
+            onClick={onOpenInitialSetup}
+            className="px-3 py-1.5 rounded-md text-xs bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
           >
-            🔊 Probar Audio
+            🚀 Empezar
           </button>
 
-          {/* Stop Speaking Button */}
+
+          {/* Audio Test Button - Minimalista */}
+          <button 
+            onClick={onTestAudio}
+            className="px-3 py-1.5 rounded-md text-xs bg-gray-600 text-white hover:bg-gray-700 transition-colors"
+          >
+            🔊
+          </button>
+
+          {/* Stop Speaking Button - Minimalista */}
           {isSpeaking && (
             <button 
               onClick={onStopSpeaking}
-              className="px-4 py-2 rounded-lg text-sm font-medium bg-red-600 text-white hover:bg-red-700 transition-all duration-300"
+              className="px-3 py-1.5 rounded-md text-xs bg-red-600 text-white hover:bg-red-700 transition-colors"
             >
-              ⏹️ Parar Audio
+              ⏹️
             </button>
           )}
 
-          {/* n8n Connection Button - Solo mostrar si está inicializado */}
+          {/* n8n Connection Button - Minimalista */}
           {isInitialized && (
             <button 
               onClick={onConnectN8n}
               disabled={n8nLoading}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center space-x-2 ${
+              className={`px-3 py-1.5 rounded-md text-xs transition-colors flex items-center space-x-1 ${
                 n8nConnected 
                   ? 'bg-green-600 text-white hover:bg-green-700' 
                   : 'bg-gray-600 text-white hover:bg-gray-700'
               } ${n8nLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              <div className={`w-2 h-2 rounded-full ${
+              <div className={`w-1.5 h-1.5 rounded-full ${
                 n8nConnected 
                   ? 'bg-green-300 animate-pulse' 
                   : 'bg-gray-300'
               }`}></div>
               <span>
-                {n8nLoading ? 'Conectando...' : n8nConnected ? 'Conectado' : 'Conectar n8n'}
+                {n8nLoading ? '...' : n8nConnected ? '✓' : '🔗'}
               </span>
             </button>
           )}
 
-          {/* Real-time Monitoring Button - Solo mostrar si está inicializado */}
-          {isInitialized && n8nConnected && workflowConfigured && (
+          {/* Real-time Monitoring Button - OCULTO */}
+          {/* {isInitialized && n8nConnected && workflowConfigured && (
             <button 
               onClick={onToggleMonitoring}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center space-x-2 ${
@@ -72,10 +80,10 @@ const ChatHeader = ({ isSpeaking, onStopSpeaking, onTestAudio, n8nConnected, n8n
                 </span>
               </span>
             </button>
-          )}
+          )} */}
 
-          {/* API Configuration Button - Solo mostrar si está completamente inicializado */}
-          {isInitialized && (
+          {/* API Configuration Button - OCULTO */}
+          {/* {isInitialized && (
             <button 
               onClick={onOpenApiConfig}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center space-x-2 ${
@@ -92,10 +100,10 @@ const ChatHeader = ({ isSpeaking, onStopSpeaking, onTestAudio, n8nConnected, n8n
                 {apiConfigured ? 'Configurar API' : '⚠️ Configurar API'}
               </span>
             </button>
-          )}
+          )} */}
 
-          {/* Workflow Selection Button - Solo mostrar si está completamente inicializado */}
-          {isInitialized && apiConfigured && (
+          {/* Workflow Selection Button - OCULTO */}
+          {/* {isInitialized && apiConfigured && (
             <button 
               onClick={onOpenWorkflowSelector}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center space-x-2 ${
@@ -118,10 +126,10 @@ const ChatHeader = ({ isSpeaking, onStopSpeaking, onTestAudio, n8nConnected, n8n
                 )}
               </span>
             </button>
-          )}
+          )} */}
 
-          {/* Browser Monitor Button - Solo mostrar si está inicializado */}
-          {isInitialized && (
+          {/* Browser Monitor Button - OCULTO */}
+          {/* {isInitialized && (
             <button 
               onClick={onOpenBrowserMonitor}
               className="px-4 py-2 rounded-lg text-sm font-medium bg-purple-600 text-white hover:bg-purple-700 transition-all duration-300 flex items-center space-x-2"
@@ -132,21 +140,46 @@ const ChatHeader = ({ isSpeaking, onStopSpeaking, onTestAudio, n8nConnected, n8n
               </svg>
               <span>🎓 Monitor</span>
             </button>
-          )}
+          )} */}
 
-          {/* Simple Browser Control Button - Siempre visible */}
+          {/* Emergency Browser Button - Con texto */}
           <button 
             onClick={onOpenSimpleBrowserControl}
-            className="px-4 py-2 rounded-lg text-sm font-medium bg-green-600 text-white hover:bg-green-700 transition-all duration-300 flex items-center space-x-2"
+            className="px-3 py-1.5 rounded-md text-xs bg-green-600 text-white hover:bg-green-700 transition-colors"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
-            </svg>
-            <span>🌐 Abrir Browser</span>
+            🌐 Abrir
           </button>
 
-          {/* Reconnect Button */}
+          {/* Exercise Manager Button */}
+          {isInitialized && (
+            <button 
+              onClick={onOpenExerciseManager}
+              className="px-3 py-1.5 rounded-md text-xs bg-purple-600 text-white hover:bg-purple-700 transition-colors"
+            >
+              📚
+            </button>
+          )}
+
+          {/* Triggers Workflow Button */}
           <button 
+            onClick={onOpenTriggersWorkflow}
+            className="px-3 py-1.5 rounded-md text-xs bg-amber-600 text-white hover:bg-amber-700 transition-colors"
+          >
+            ⚡
+          </button>
+
+          
+
+          {/* Server Status Button */}
+          <button 
+            onClick={onOpenServerStatus}
+            className="px-3 py-1.5 rounded-md text-xs bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+          >
+            📊
+          </button>
+
+          {/* Reconnect Button - OCULTO */}
+          {/* <button 
             onClick={onReconnect}
             className="px-4 py-2 rounded-lg text-sm font-medium bg-orange-600 text-white hover:bg-orange-700 transition-all duration-300 flex items-center space-x-2"
           >
@@ -154,7 +187,7 @@ const ChatHeader = ({ isSpeaking, onStopSpeaking, onTestAudio, n8nConnected, n8n
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
             <span>Reconectar</span>
-          </button>
+          </button> */}
         </div>
       </div>
     </div>

@@ -4,7 +4,7 @@ import VectorizedDataCollector from './components/VectorizedDataCollector';
 import SimpleBrowserControl from './components/SimpleBrowserControl';
 
 function App() {
-  const [activeTab, setActiveTab] = useState('chat');
+  const [activeTab, setActiveTab] = useState('chat'); // Solo pestaña Chat disponible
 
   return (
     <div className="min-h-screen bg-gray-900">
@@ -21,7 +21,8 @@ function App() {
           >
             💬 Chat
           </button>
-          <button
+          {/* Pestañas ocultas - Recolector Vectorizado y Control Simple */}
+          {/* <button
             onClick={() => setActiveTab('collector')}
             className={`px-4 py-2 text-sm font-medium ${
               activeTab === 'collector'
@@ -40,22 +41,12 @@ function App() {
             }`}
           >
             🌐 Control Simple
-          </button>
+          </button> */}
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-hidden">
-          {activeTab === 'chat' ? (
-            <ChatBox />
-          ) : activeTab === 'collector' ? (
-            <div className="h-full overflow-y-auto p-4">
-              <VectorizedDataCollector />
-            </div>
-          ) : (
-            <div className="h-full overflow-y-auto p-4">
-              <SimpleBrowserControl />
-            </div>
-          )}
+          <ChatBox />
         </div>
       </div>
     </div>

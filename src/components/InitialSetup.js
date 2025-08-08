@@ -10,15 +10,77 @@ const InitialSetup = ({ onSetupComplete, onOpenSimpleBrowserControl }) => {
   const [selectedWorkflow, setSelectedWorkflow] = useState(null);
   const [isLoadingWorkflows, setIsLoadingWorkflows] = useState(false);
   const [browserOpened, setBrowserOpened] = useState(false);
+  const [browserActive, setBrowserActive] = useState(false);
 
   useEffect(() => {
-    // No cargar configuración guardada - siempre empezar desde cero
-    console.log('🔐 Iniciando setup desde cero - sin localStorage');
+    // Cargar configuración guardada si existe
+    try {
+      const savedBaseUrl = localStorage.getItem('n8n_base_url');
+      const savedToken = localStorage.getItem('n8n_api_token');
+      if (savedBaseUrl) setN8nUrl(savedBaseUrl);
+      if (savedToken) setApiToken(savedToken);
+    } catch (e) {
+      // Ignorar errores de localStorage
+    }
+    // Verificar estado del navegador al cargar
+    checkBrowserStatus();
   }, []);
 
-  const openBrowser = async () => {
-    setValidationMessage('Abriendo navegador...');
+  const checkBrowserStatus = async () => {
     try {
+      const statusResponse = await fetch('http://localhost:3001/api/browser-status');
+      const statusResult = await statusResponse.json();
+      setBrowserActive(statusResult.isActive);
+      return statusResult.isActive;
+    } catch (error) {
+      console.error('Error verificando estado del navegador:', error);
+      return false;
+    }
+  };
+
+  const closeBrowser = async () => {
+    setValidationMessage('Cerrando navegador...');
+    try {
+      const response = await fetch('http://localhost:3001/api/execute-browser-script', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'stop'
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        setValidationMessage('✅ Navegador cerrado correctamente');
+        setBrowserActive(false);
+        setTimeout(() => {
+          setValidationMessage('');
+        }, 2000);
+      } else {
+        setValidationMessage(`Error cerrando navegador: ${result.message}`);
+      }
+    } catch (error) {
+      setValidationMessage(`Error cerrando navegador: ${error.message}`);
+    }
+  };
+
+  const openBrowser = async () => {
+    setValidationMessage('Verificando estado del navegador...');
+    
+    try {
+      // Primero verificar si ya hay un navegador activo
+      const isActive = await checkBrowserStatus();
+      
+      if (isActive) {
+        setValidationMessage('⚠️ Ya hay un navegador activo. Cierra el navegador actual antes de abrir uno nuevo.');
+        return;
+      }
+      
+      setValidationMessage('Abriendo navegador...');
+      
       // Llamar al endpoint del backend para ejecutar el script Python
       const response = await fetch('http://localhost:3001/api/execute-browser-script', {
         method: 'POST',
@@ -79,6 +141,9 @@ const InitialSetup = ({ onSetupComplete, onOpenSimpleBrowserControl }) => {
           }, 1000);
         }, 9000);
         
+      } else if (response.status === 409) {
+        // Conflicto - ya hay un navegador activo
+        setValidationMessage('⚠️ Ya hay un navegador activo. Cierra el navegador actual antes de abrir uno nuevo.');
       } else {
         setValidationMessage(`Error del servidor: ${result.message}`);
       }
@@ -88,10 +153,16 @@ const InitialSetup = ({ onSetupComplete, onOpenSimpleBrowserControl }) => {
   };
 
   const validateConnection = async () => {
-    if (!apiToken.trim()) {
+    // Limpiar el token antes de validar
+    const cleanedToken = apiToken.trim();
+    
+    if (!cleanedToken) {
       setValidationMessage('Por favor ingresa tu token de API');
       return;
     }
+
+    // Actualizar el estado con el token limpio
+    setApiToken(cleanedToken);
 
     setIsValidating(true);
     setValidationMessage('Validando conexión...');
@@ -105,7 +176,7 @@ const InitialSetup = ({ onSetupComplete, onOpenSimpleBrowserControl }) => {
         },
         body: JSON.stringify({
           n8nBaseUrl: n8nUrl,
-          n8nApiToken: apiToken
+          n8nApiToken: cleanedToken
         })
       });
 
@@ -115,8 +186,13 @@ const InitialSetup = ({ onSetupComplete, onOpenSimpleBrowserControl }) => {
         setIsValidating(false);
         setValidationMessage('¡Conexión exitosa! Cargando workflows...');
         
-        // No guardar en localStorage - mantener en memoria solo
-        console.log('✅ Configuración validada - no guardando en localStorage');
+        // Guardar en localStorage para la sesión
+        try {
+          localStorage.setItem('n8n_base_url', n8nUrl);
+          localStorage.setItem('n8n_api_token', cleanedToken);
+        } catch (e) {
+          console.warn('No se pudo guardar en localStorage:', e);
+        }
         
         // Ir al siguiente paso
         setTimeout(() => {
@@ -168,13 +244,17 @@ const InitialSetup = ({ onSetupComplete, onOpenSimpleBrowserControl }) => {
       const result = await response.json();
       
       if (result.success) {
-        // No guardar en localStorage - mantener en memoria solo
-        console.log('✅ Workflow seleccionado - no guardando en localStorage');
+        // Guardar workflow en localStorage
+        try {
+          localStorage.setItem('n8n_selected_workflow', JSON.stringify(workflow));
+        } catch (e) {
+          console.warn('No se pudo guardar workflow en localStorage:', e);
+        }
         
         // Completar setup
         setTimeout(() => {
           onSetupComplete({
-            token: apiToken,
+            token: apiToken.trim(), // Asegurar token limpio
             baseUrl: n8nUrl,
             workflow: workflow
           });
@@ -196,36 +276,11 @@ const InitialSetup = ({ onSetupComplete, onOpenSimpleBrowserControl }) => {
           </svg>
         </div>
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-          🌐 Paso 1: Abrir Navegador (Sistema Funcional)
+          🌐 Abrir Navegador
         </h2>
         <p className="text-gray-600 dark:text-gray-400">
-          Ejecutando script Python directo: <code>python3 simple_browser_control.py</code>
+          Ejecutar script Python para abrir Chrome y monitorear n8n
         </p>
-      </div>
-
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
-        <h3 className="font-semibold text-blue-900 dark:text-blue-200 mb-2">
-          📋 Instrucciones (Según README):
-        </h3>
-        <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
-          <li>• Se ejecutará: <code>python3 simple_browser_control.py</code></li>
-          <li>• Chrome se abrirá automáticamente</li>
-          <li>• Navegará a n8n (http://localhost:5678)</li>
-          <li>• Recolectará datos vectorizados en PostgreSQL</li>
-          <li>• Sin Flask, sin entorno virtual</li>
-        </ul>
-      </div>
-      
-      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
-        <h3 className="font-semibold text-green-900 dark:text-green-200 mb-2">
-          ✅ Estado Confirmado:
-        </h3>
-        <ul className="text-sm text-green-800 dark:text-green-300 space-y-1">
-          <li>• Entorno virtual eliminado</li>
-          <li>• PowerShell limpio</li>
-          <li>• Flask removido</li>
-          <li>• Chrome funciona automáticamente</li>
-        </ul>
       </div>
 
       {validationMessage && (
@@ -238,26 +293,33 @@ const InitialSetup = ({ onSetupComplete, onOpenSimpleBrowserControl }) => {
         </div>
       )}
 
-      <button
-        onClick={openBrowser}
-        disabled={validationMessage.includes('Abriendo') || validationMessage.includes('✅')}
-        className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-      >
-        {validationMessage.includes('Abriendo') ? '⏳ Abriendo...' : 
-         validationMessage.includes('✅') ? '✅ Completado' : 
-         '🌐 Ejecutar Script Python'}
-      </button>
-      
-      <div className="bg-gray-50 dark:bg-gray-900/20 border border-gray-200 dark:border-gray-700 rounded-lg p-4 mt-4">
-        <h3 className="font-semibold text-gray-900 dark:text-gray-200 mb-2">
-          🔧 Información Técnica:
-        </h3>
-        <div className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
-          <div>• <strong>Endpoint:</strong> <code>POST /api/execute-browser-script</code></div>
-          <div>• <strong>Script:</strong> <code>python3 simple_browser_control.py</code></div>
-          <div>• <strong>Base de Datos:</strong> PostgreSQL (Neon)</div>
-          <div>• <strong>Vectorización:</strong> Text (1000d), Context (10d), Action (6d)</div>
-        </div>
+      <div className="space-y-3">
+        {browserActive ? (
+          <>
+            <div className="p-3 bg-yellow-100 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded-md">
+              <p className="text-yellow-800 dark:text-yellow-200 text-sm">
+                ⚠️ Ya hay un navegador activo. Cierra el navegador actual antes de abrir uno nuevo.
+              </p>
+            </div>
+            <button
+              onClick={closeBrowser}
+              disabled={validationMessage.includes('Cerrando')}
+              className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            >
+              {validationMessage.includes('Cerrando') ? '⏳ Cerrando...' : '🛑 Cerrar Navegador'}
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={openBrowser}
+            disabled={validationMessage.includes('Abriendo') || validationMessage.includes('✅')}
+            className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+          >
+            {validationMessage.includes('Abriendo') ? '⏳ Abriendo...' : 
+             validationMessage.includes('✅') ? '✅ Completado' : 
+             '🌐 Abrir Explorador'}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -267,12 +329,13 @@ const InitialSetup = ({ onSetupComplete, onOpenSimpleBrowserControl }) => {
       <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">
         📝 Cómo obtener tu token de API de n8n:
       </h4>
-      <ol className="text-sm text-blue-700 dark:text-blue-300 list-decimal list-inside space-y-1">
-        <li>Abre n8n en: <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">{n8nUrl}</code></li>
-        <li>Ve a <strong>Settings</strong> → <strong>API</strong></li>
-        <li>Haz clic en <strong>"Create API Key"</strong></li>
-        <li>Copia el token generado y pégalo aquí</li>
-      </ol>
+              <ol className="text-sm text-blue-700 dark:text-blue-300 list-decimal list-inside space-y-1">
+          <li>Realiza login en n8n desde el navegador que acaba de abrir</li>
+          <li>Dirígete a los tres puntos que se encuentran en la parte inferior izquierda junto a tu nombre de usuario → <strong>Settings</strong></li>
+          <li>Haz clic en <strong>"n8n API"</strong></li>
+          <li>Luego presiona <strong>"Create an API key"</strong></li>
+          <li>Crea una API key con todos los permisos y salvas</li>
+        </ol>
     </div>
   );
 
@@ -309,7 +372,18 @@ const InitialSetup = ({ onSetupComplete, onOpenSimpleBrowserControl }) => {
           </label>
           <textarea
             value={apiToken}
-            onChange={(e) => setApiToken(e.target.value)}
+            onChange={(e) => {
+              // Limpiar espacios en blanco automáticamente
+              const cleanedValue = e.target.value.trim();
+              setApiToken(cleanedValue);
+            }}
+            onPaste={(e) => {
+              // Limpiar espacios cuando se pega
+              e.preventDefault();
+              const pastedText = e.clipboardData.getData('text');
+              const cleanedText = pastedText.trim();
+              setApiToken(cleanedText);
+            }}
             rows={3}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white resize-none"
             placeholder="Pega aquí tu token de API de n8n..."

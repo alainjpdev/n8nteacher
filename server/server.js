@@ -4,6 +4,8 @@ const http = require('http');
 const WebSocket = require('ws');
 const axios = require('axios');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
@@ -31,6 +33,20 @@ app.use(express.json());
 
 // Additional CORS handling for preflight requests
 app.options('*', cors(corsOptions));
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({
+    success: true,
+    status: 'running',
+    timestamp: new Date().toISOString(),
+    services: {
+      server: 'running',
+      n8n: global.N8N_BASE_URL ? 'configured' : 'not_configured',
+      browser: browserProcess && !browserProcess.killed ? 'running' : 'stopped'
+    }
+  });
+});
 
 // API endpoints
 app.post('/api/config', (req, res) => {
@@ -1117,6 +1133,50 @@ app.post('/api/workflow/select', (req, res) => {
   }
 });
 
+// Apply nodes from JSON file to the currently selected (empty) workflow
+app.post('/api/workflow/apply-from-file', async (req, res) => {
+  try {
+    if (!TARGET_WORKFLOW_ID) {
+      return res.status(400).json({ success: false, message: 'No hay workflow objetivo seleccionado' });
+    }
+
+    const fileRelPath = req.body?.filePath || 'json-files/clase1/manualtriger.json';
+    const filePath = path.join(__dirname, '..', fileRelPath);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ success: false, message: `Archivo no encontrado: ${fileRelPath}` });
+    }
+
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    const json = JSON.parse(fileContent);
+
+    // Fetch current workflow
+    const wfUrl = `${global.N8N_BASE_URL}/workflows/${TARGET_WORKFLOW_ID}`;
+    const headers = { 'X-N8N-API-KEY': global.N8N_API_TOKEN };
+    const current = await axios.get(wfUrl, { headers });
+
+    const currentData = current.data?.data || current.data;
+    const isEmpty = !currentData?.nodes || currentData.nodes.length === 0;
+
+    // Build payload: only use nodes/connections from file
+    const payload = {
+      name: currentData?.name || json?.name || 'Clase 1',
+      nodes: json.nodes || [],
+      connections: json.connections || {},
+      settings: { ...(currentData?.settings || {}), ...(json?.settings || {}) },
+      pinData: json.pinData || {},
+      tags: currentData?.tags || []
+    };
+
+    // Update workflow (even if not empty, we follow user instruction to apply)
+    const updateRes = await axios.patch(wfUrl, payload, { headers });
+
+    return res.json({ success: true, message: 'Workflow actualizado con nodos del archivo', appliedNodes: payload.nodes?.length || 0, workflowId: TARGET_WORKFLOW_ID, data: updateRes.data });
+  } catch (error) {
+    console.error('❌ Error aplicando nodos desde archivo:', error.response?.data || error.message);
+    return res.status(500).json({ success: false, message: 'Error aplicando nodos desde archivo', error: error.response?.data || error.message });
+  }
+});
+
 // Endpoint to update API configuration
 app.post('/api/config/update', (req, res) => {
   try {
@@ -1182,12 +1242,46 @@ app.get('/debug/config', (req, res) => {
   });
 });
 
+// Variable global para rastrear el proceso del navegador
+let browserProcess = null;
+
+// Endpoint para verificar si hay un navegador activo
+app.get('/api/browser-status', (req, res) => {
+  try {
+    const isActive = browserProcess && !browserProcess.killed;
+    
+    res.json({
+      success: true,
+      isActive: isActive,
+      active: isActive,
+      message: isActive ? 'Navegador activo' : 'No hay navegador activo'
+    });
+  } catch (error) {
+    console.error('❌ Error verificando estado del navegador:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error verificando estado del navegador',
+      error: error.message
+    });
+  }
+});
+
 // Endpoint para ejecutar el script Python del browser
 app.post('/api/execute-browser-script', (req, res) => {
   try {
     const { action } = req.body;
     
     if (action === 'start') {
+      // Verificar si ya hay un navegador activo
+      if (browserProcess && !browserProcess.killed) {
+        console.log('⚠️ Ya hay un navegador activo');
+        return res.status(409).json({
+          success: false,
+          message: 'Ya hay un navegador activo. Cierra el navegador actual antes de abrir uno nuevo.',
+          isActive: true
+        });
+      }
+      
       console.log('🚀 Ejecutando script Python para abrir browser...');
       
       // Ejecutar el script Python en segundo plano
@@ -1199,22 +1293,23 @@ app.post('/api/execute-browser-script', (req, res) => {
       
       console.log(`📁 Ejecutando script: ${scriptPath}`);
       
-      const pythonProcess = spawn('python3', [scriptPath], {
+      browserProcess = spawn('python3', [scriptPath], {
         cwd: path.join(__dirname, '../browser-monitor'),
         stdio: ['pipe', 'pipe', 'pipe']
       });
       
       // Capturar output
-      pythonProcess.stdout.on('data', (data) => {
+      browserProcess.stdout.on('data', (data) => {
         console.log(`📊 Browser Script: ${data.toString().trim()}`);
       });
       
-      pythonProcess.stderr.on('data', (data) => {
+      browserProcess.stderr.on('data', (data) => {
         console.error(`❌ Browser Script Error: ${data.toString().trim()}`);
       });
       
-      pythonProcess.on('close', (code) => {
+      browserProcess.on('close', (code) => {
         console.log(`✅ Browser Script terminado con código: ${code}`);
+        browserProcess = null; // Limpiar referencia cuando termina
       });
       
       res.json({
@@ -1226,8 +1321,12 @@ app.post('/api/execute-browser-script', (req, res) => {
     } else if (action === 'stop') {
       console.log('🛑 Deteniendo script Python...');
       
-      // En una implementación real, aquí terminarías el proceso
-      // Por ahora solo simulamos
+      if (browserProcess && !browserProcess.killed) {
+        browserProcess.kill('SIGTERM');
+        browserProcess = null;
+        console.log('✅ Proceso del navegador terminado');
+      }
+      
       res.json({
         success: true,
         message: 'Script Python detenido',

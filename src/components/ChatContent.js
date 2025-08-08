@@ -12,15 +12,36 @@ const ChatContent = ({
   n8nError,
   currentWorkflow,
   workflowStatus,
-  isInitialized
+  isInitialized,
+  onNextStep,
+  onPreviousStep
 }) => {
+  const [showConnectionBanner, setShowConnectionBanner] = React.useState(true);
+
+  // Ocultar banner de conexión después de 8 segundos
+  React.useEffect(() => {
+    if (isInitialized && n8nConnected && !n8nLoading && !n8nError) {
+      // Mostrar banner cuando se conecta
+      setShowConnectionBanner(true);
+      
+      // Ocultar después de 8 segundos
+      const timer = setTimeout(() => {
+        setShowConnectionBanner(false);
+      }, 8000); // 8 segundos
+
+      return () => clearTimeout(timer);
+    } else if (!n8nConnected || n8nLoading || n8nError) {
+      // Ocultar banner cuando hay errores o está cargando
+      setShowConnectionBanner(false);
+    }
+  }, [isInitialized, n8nConnected, n8nLoading, n8nError]);
   return (
     <div className="flex-1 p-4 bg-gray-900">
       <div className={`transition-opacity duration-500 h-full ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
         <div className="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700 h-full flex flex-col">
           
-          {/* n8n Connection Banner - Solo mostrar si está inicializado */}
-          {isInitialized && n8nConnected && (
+          {/* n8n Connection Banner - Solo mostrar si está inicializado y showConnectionBanner es true */}
+          {isInitialized && n8nConnected && showConnectionBanner && (
             <div className="mb-4 p-4 bg-green-900 border border-green-700 rounded-lg">
               <div className="flex items-center space-x-3">
                 <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
@@ -138,7 +159,8 @@ const ChatContent = ({
             </div>
           )}
 
-          {speechReady && !userInteracted && (
+          {/* Audio Test Message - OCULTO */}
+          {/* {speechReady && !userInteracted && (
             <div className="mb-4 p-3 bg-yellow-900 border border-yellow-700 text-yellow-200 rounded text-sm">
               <div className="flex items-center space-x-2">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -147,7 +169,7 @@ const ChatContent = ({
                 <span>Haz clic en "Probar Audio" para activar la narración</span>
               </div>
             </div>
-          )}
+          )} */}
 
           {/* Step Indicator */}
           <div className="mb-4">
@@ -175,6 +197,43 @@ const ChatContent = ({
                 />
               ))}
             </div>
+          </div>
+
+          {/* Navigation Arrows */}
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={onPreviousStep}
+              disabled={currentStep === 0}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-md font-medium transition-colors ${
+                currentStep === 0
+                  ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              <span>Anterior</span>
+            </button>
+
+            <div className="text-sm text-gray-400">
+              {currentStep + 1} / {instructions.length}
+            </div>
+
+            <button
+              onClick={onNextStep}
+              disabled={currentStep === instructions.length - 1}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-md font-medium transition-colors ${
+                currentStep === instructions.length - 1
+                  ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                  : 'bg-green-600 text-white hover:bg-green-700'
+              }`}
+            >
+              <span>Siguiente</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
           </div>
           
           {/* Current Instruction */}
@@ -241,12 +300,23 @@ const ChatContent = ({
 // Helper function to get action descriptions
 const getActionDescription = (action) => {
   const descriptions = {
+    // Acciones generales
     'create_webhook_workflow': 'Creará un nuevo workflow con trigger de webhook',
     'add_set_node': 'Agregará un nodo Set para procesar datos',
     'add_validation_node': 'Agregará un nodo IF para validar email',
     'add_database_node': 'Agregará un nodo PostgreSQL para guardar datos',
     'add_email_node': 'Agregará un nodo Email para enviar notificaciones',
-    'test_workflow': 'Ejecutará el workflow con datos de prueba'
+    'test_workflow': 'Ejecutará el workflow con datos de prueba',
+    
+    // Acciones específicas de triggers
+    'introduction_triggers': 'Te introducirá a los conceptos básicos de triggers en n8n',
+    'manual_trigger': 'Te guiará para crear y configurar un trigger manual',
+    'webhook_trigger': 'Te ayudará a configurar un trigger webhook para recibir datos externos',
+    'schedule_trigger': 'Te mostrará cómo configurar un trigger de programación temporal',
+    'email_trigger': 'Te enseñará a configurar un trigger para monitorear emails',
+    'database_trigger': 'Te guiará para configurar un trigger que monitoree cambios en bases de datos',
+    'file_trigger': 'Te ayudará a configurar un trigger para monitorear cambios en archivos',
+    'final_project': 'Te guiará para crear un workflow completo combinando múltiples triggers'
   };
   return descriptions[action] || 'Acción no definida';
 };

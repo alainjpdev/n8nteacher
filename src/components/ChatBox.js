@@ -7,6 +7,9 @@ import WorkflowSelector from './WorkflowSelector';
 import InitialSetup from './InitialSetup';
 import BrowserMonitor from './BrowserMonitor';
 import SimpleBrowserControl from './SimpleBrowserControl';
+import ExerciseManager from './ExerciseManager';
+import TriggersWorkflow from './TriggersWorkflow';
+import ServerStatus from './ServerStatus';
 // import N8nLogs from './N8nLogs';
 import n8nMonitorService from '../services/n8nMonitorService';
 
@@ -48,51 +51,184 @@ const ChatBox = () => {
   
   // Simple Browser Control states
   const [showSimpleBrowserControl, setShowSimpleBrowserControl] = useState(false);
+  
+  // Exercise Manager states
+  const [showExerciseManager, setShowExerciseManager] = useState(false);
+  
+  // Server Status states
+  const [showServerStatus, setShowServerStatus] = useState(false);
 
-  const instructions = useMemo(() => [
+  // Triggers modal state
+  const [showTriggersWorkflow, setShowTriggersWorkflow] = useState(false);
+
+  // Sistema de ejercicios dinámico - Con ejercicios de triggers de n8n
+  const [dynamicExercises, setDynamicExercises] = useState([
     {
-      title: "Ejercicio 1: Configurar Credenciales de OpenAI",
-      content: "Abre el workflow 'Agente para Principiantes' en n8n. Ve al nodo 'OpenAI Chat Model' y configura las credenciales de OpenAI. Necesitarás tu API key de OpenAI para que el agente funcione correctamente.",
-      duration: 10000,
-      type: 'credentials',
-      action: 'configure_openai_credentials'
-    },
-    {
-      title: "Ejercicio 2: Configurar Credenciales de Gmail",
-      content: "En el mismo workflow, ve al nodo 'Gmail' y configura las credenciales de Gmail. Esto permitirá que el agente envíe emails automáticamente cuando reciba formularios.",
-      duration: 10000,
-      type: 'credentials',
-      action: 'configure_gmail_credentials'
-    },
-    {
-      title: "Ejercicio 3: Activar el Workflow",
-      content: "Una vez configuradas las credenciales, activa el workflow 'Agente para Principiantes' haciendo clic en el botón de activación. Esto hará que el agente esté listo para recibir formularios.",
-      duration: 8000,
-      type: 'activation',
-      action: 'activate_workflow'
-    },
-    {
-      title: "Ejercicio 4: Probar el Formulario",
-      content: "Ve a la URL del formulario web del workflow y llena el formulario con datos de prueba. Esto activará el agente y deberías recibir un email de respuesta automática.",
-      duration: 10000,
-      type: 'testing',
-      action: 'test_form'
-    },
-    {
-      title: "Ejercicio 5: Monitorear Ejecuciones",
-      content: "En n8n, ve a la pestaña 'Executions' para ver las ejecuciones del workflow. Aquí podrás ver si el agente está procesando correctamente los formularios y enviando emails.",
-      duration: 8000,
-      type: 'monitoring',
-      action: 'monitor_executions'
-    },
-    {
-      title: "Ejercicio 6: Personalizar el Agente",
-      content: "Modifica el prompt del nodo 'AI Agent' para personalizar las respuestas del agente. Puedes cambiar el tono, agregar más información o modificar la lógica de respuesta según tus necesidades.",
+      id: 1,
+      title: "Ejercicio 1: Introducción a los Triggers de n8n",
+      content: "Los triggers son el punto de entrada de cualquier workflow en n8n. Son los que inician la automatización. En este ejercicio aprenderás los tipos básicos de triggers y cómo usarlos.",
       duration: 12000,
-      type: 'customization',
-      action: 'customize_agent'
+      type: 'triggers',
+      action: 'introduction_triggers',
+      difficulty: 'beginner',
+      videoReference: null,
+      timestamp: new Date().toISOString()
+    },
+    {
+      id: 2,
+      title: "Ejercicio 2: Trigger Manual - El más simple",
+      content: "Crea un nuevo workflow y agrega un trigger manual. Este es el trigger más básico que permite ejecutar el workflow manualmente desde la interfaz de n8n.",
+      duration: 8000,
+      type: 'triggers',
+      action: 'manual_trigger',
+      difficulty: 'beginner',
+      videoReference: null,
+      timestamp: new Date().toISOString()
+    },
+    {
+      id: 3,
+      title: "Ejercicio 3: Trigger Webhook - Para APIs",
+      content: "Configura un trigger webhook que permita que tu workflow reciba datos desde aplicaciones externas. Este es fundamental para integraciones con APIs.",
+      duration: 15000,
+      type: 'triggers',
+      action: 'webhook_trigger',
+      difficulty: 'intermediate',
+      videoReference: null,
+      timestamp: new Date().toISOString()
+    },
+    {
+      id: 4,
+      title: "Ejercicio 4: Trigger Schedule - Automatización temporal",
+      content: "Configura un trigger de programación que ejecute tu workflow automáticamente en intervalos específicos (cada hora, diario, semanal, etc.).",
+      duration: 10000,
+      type: 'triggers',
+      action: 'schedule_trigger',
+      difficulty: 'intermediate',
+      videoReference: null,
+      timestamp: new Date().toISOString()
+    },
+    {
+      id: 5,
+      title: "Ejercicio 5: Trigger Email - Monitoreo de correos",
+      content: "Configura un trigger de email que detecte nuevos correos y procese automáticamente su contenido. Útil para automatizar respuestas a emails.",
+      duration: 12000,
+      type: 'triggers',
+      action: 'email_trigger',
+      difficulty: 'intermediate',
+      videoReference: null,
+      timestamp: new Date().toISOString()
+    },
+    {
+      id: 6,
+      title: "Ejercicio 6: Trigger de Base de Datos - Monitoreo de cambios",
+      content: "Configura un trigger que monitoree cambios en una base de datos y ejecute acciones automáticamente cuando se agreguen, modifiquen o eliminen registros.",
+      duration: 15000,
+      type: 'triggers',
+      action: 'database_trigger',
+      difficulty: 'advanced',
+      videoReference: null,
+      timestamp: new Date().toISOString()
+    },
+    {
+      id: 7,
+      title: "Ejercicio 7: Trigger de Archivos - Monitoreo de carpetas",
+      content: "Configura un trigger que detecte cuando se agregan, modifican o eliminan archivos en una carpeta específica. Útil para procesamiento automático de archivos.",
+      duration: 12000,
+      type: 'triggers',
+      action: 'file_trigger',
+      difficulty: 'advanced',
+      videoReference: null,
+      timestamp: new Date().toISOString()
+    },
+    {
+      id: 8,
+      title: "Ejercicio 8: Proyecto Final - Workflow completo con triggers",
+      content: "Crea un workflow completo que combine múltiples triggers y nodos de procesamiento. Este ejercicio integra todo lo aprendido sobre triggers de n8n.",
+      duration: 20000,
+      type: 'triggers',
+      action: 'final_project',
+      difficulty: 'advanced',
+      videoReference: null,
+      timestamp: new Date().toISOString()
     }
-  ], []);
+  ]);
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
+  
+  // Función para agregar ejercicios dinámicamente
+  const addExercise = useCallback((exercise) => {
+    setDynamicExercises(prev => [...prev, {
+      id: Date.now(),
+      title: exercise.title,
+      content: exercise.content,
+      duration: exercise.duration || 8000,
+      type: exercise.type || 'general',
+      action: exercise.action || 'custom_action',
+      difficulty: exercise.difficulty || 'beginner',
+      videoReference: exercise.videoReference || null,
+      timestamp: new Date().toISOString()
+    }]);
+  }, []);
+
+  // Función para eliminar ejercicio
+  const removeExercise = useCallback((exerciseId) => {
+    setDynamicExercises(prev => prev.filter(ex => ex.id !== exerciseId));
+  }, []);
+
+  // Función para actualizar ejercicio
+  const updateExercise = useCallback((exerciseId, updates) => {
+    setDynamicExercises(prev => prev.map(ex => 
+      ex.id === exerciseId ? { ...ex, ...updates } : ex
+    ));
+  }, []);
+
+  // Función para generar ejercicio basado en progreso del usuario
+  const generateExerciseFromProgress = useCallback((userProgress) => {
+    const newExercise = {
+      title: `Ejercicio Dinámico ${dynamicExercises.length + 1}`,
+      content: "Este es un ejercicio generado dinámicamente basado en tu progreso",
+      duration: 8000,
+      type: 'dynamic',
+      action: 'dynamic_action',
+      difficulty: userProgress.skillLevel || 'beginner'
+    };
+    
+    addExercise(newExercise);
+  }, [dynamicExercises.length, addExercise]);
+
+  // Función para generar ejercicios desde video
+  const generateFromVideo = useCallback((videoUrl) => {
+    console.log('🎬 Analizando video:', videoUrl);
+    
+    // Aquí puedes integrar con una API para analizar el video
+    // Por ahora, generamos ejercicios de ejemplo basados en la URL
+    const videoId = videoUrl.split('v=')[1] || 'unknown';
+    
+    const videoBasedExercises = [
+      {
+        title: `Ejercicio basado en video: ${videoId}`,
+        content: "Este ejercicio fue generado automáticamente basado en el análisis del video. Revisa el contenido del video y practica los conceptos mostrados.",
+        duration: 10000,
+        type: 'video_based',
+        action: 'video_analysis',
+        difficulty: 'intermediate',
+        videoReference: videoUrl
+      },
+      {
+        title: "Práctica de conceptos del video",
+        content: "Implementa los conceptos aprendidos en el video en tu propio workflow de n8n.",
+        duration: 12000,
+        type: 'practice',
+        action: 'implement_concepts',
+        difficulty: 'advanced',
+        videoReference: videoUrl
+      }
+    ];
+    
+    videoBasedExercises.forEach(exercise => addExercise(exercise));
+  }, [addExercise]);
+
+  // Usar ejercicios dinámicos en lugar de los estáticos
+  const instructions = useMemo(() => dynamicExercises, [dynamicExercises]);
 
   // n8n Log callback - Comentado ya que los logs están ocultos
   // const handleN8nLog = useCallback((logEntry) => {
@@ -132,11 +268,17 @@ const ChatBox = () => {
     }
   }, []);
 
-  // Siempre mostrar setup inicial - no usar localStorage
+  // Mostrar setup inicial solo si no está inicializado
   useEffect(() => {
-    console.log('🔐 Mostrando setup inicial - sin localStorage');
-    setShowInitialSetup(true);
-  }, []);
+    console.log('🔐 Verificando estado de inicialización...');
+    if (!isInitialized) {
+      console.log('🔐 Mostrando setup inicial - no inicializado');
+      setShowInitialSetup(true);
+    } else {
+      console.log('🔐 Ya inicializado - no mostrar setup');
+      setShowInitialSetup(false);
+    }
+  }, [isInitialized]);
 
   // API Configuration handlers
   const handleApiConfigured = useCallback((config) => {
@@ -204,6 +346,26 @@ const ChatBox = () => {
     setShowSimpleBrowserControl(false);
   }, []);
 
+  // Server Status handlers
+  const handleOpenServerStatus = useCallback(() => {
+    setShowServerStatus(true);
+  }, []);
+
+  const handleCloseServerStatus = useCallback(() => {
+    setShowServerStatus(false);
+  }, []);
+
+  // Triggers modal handlers
+  const handleOpenTriggersWorkflow = useCallback(() => {
+    setShowTriggersWorkflow(true);
+  }, []);
+
+  const handleCloseTriggersWorkflow = useCallback(() => {
+    setShowTriggersWorkflow(false);
+  }, []);
+
+  
+
   // Toggle real-time monitoring
   const handleToggleMonitoring = useCallback(() => {
     if (isMonitoring) {
@@ -222,6 +384,53 @@ const ChatBox = () => {
       initializeN8n();
     }
   }, [apiConfigured, workflowConfigured]);
+
+  // Persist initialization state in memory
+  useEffect(() => {
+    if (isInitialized) {
+      console.log('🔐 Estado de inicialización persistido en memoria');
+      // El estado se mantiene en memoria mientras la app esté corriendo
+    }
+  }, [isInitialized]);
+
+  // Hydrate from localStorage on first load
+  useEffect(() => {
+    try {
+      const savedBaseUrl = localStorage.getItem('n8n_base_url');
+      const savedToken = localStorage.getItem('n8n_api_token');
+      const savedWorkflow = localStorage.getItem('n8n_selected_workflow');
+
+      if (savedBaseUrl && savedToken) {
+        const config = { token: savedToken, baseUrl: savedBaseUrl };
+        setApiConfig(config);
+        setApiConfigured(true);
+        
+        // Enviar config al backend para sincronizar
+        if (n8nMonitorService) {
+          n8nMonitorService.updateApiConfig(config);
+        }
+      }
+
+      if (savedWorkflow) {
+        try {
+          const wf = JSON.parse(savedWorkflow);
+          setSelectedWorkflow(wf);
+          setWorkflowConfigured(true);
+        } catch (_) { /* ignore parse error */ }
+      }
+
+      if ((savedBaseUrl && savedToken) || savedWorkflow) {
+        setIsInitialized(true);
+        // Inicializar conexión n8n si hay datos suficientes
+        setTimeout(() => {
+          initializeN8n();
+        }, 500);
+      }
+    } catch (e) {
+      console.warn('No se pudo leer localStorage:', e);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Initialize n8n Monitor connection
   const initializeN8n = async () => {
@@ -258,10 +467,20 @@ const ChatBox = () => {
     setApiConfigured(true);
     setWorkflowConfigured(true);
     setSelectedWorkflow(config.workflow);
+    setApiConfig({
+      token: config.token,
+      baseUrl: config.baseUrl
+    });
     
     // Initialize n8n connection after setup
     setTimeout(() => {
       initializeN8n();
+      // Aplicar nodos iniciales (manual trigger) al workflow seleccionado
+      fetch('http://localhost:3001/api/workflow/apply-from-file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filePath: 'json-files/clase1/manualtriger.json' })
+      }).catch(() => {});
     }, 1000);
   }, []);
 
@@ -512,6 +731,19 @@ const ChatBox = () => {
     }
   }, []);
 
+  // Navigation functions
+  const handleNextStep = useCallback(() => {
+    if (currentStep < instructions.length - 1) {
+      setCurrentStep(currentStep + 1);
+    }
+  }, [currentStep, instructions.length]);
+
+  const handlePreviousStep = useCallback(() => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  }, [currentStep]);
+
   return (
     <div className="flex flex-col h-full bg-gray-900 rounded-lg shadow-xl">
               <ChatHeader 
@@ -532,6 +764,9 @@ const ChatBox = () => {
           isInitialized={isInitialized}
           onOpenBrowserMonitor={handleOpenBrowserMonitor}
           onOpenSimpleBrowserControl={handleOpenSimpleBrowserControl}
+          onOpenExerciseManager={() => setShowExerciseManager(true)}
+          onOpenServerStatus={handleOpenServerStatus}
+          onOpenTriggersWorkflow={handleOpenTriggersWorkflow}
         />
       
       <div className="flex-1"> {/* This div now takes full width */}
@@ -548,6 +783,8 @@ const ChatBox = () => {
           currentWorkflow={currentWorkflow}
           workflowStatus={workflowStatus}
           isInitialized={isInitialized}
+          onNextStep={handleNextStep}
+          onPreviousStep={handlePreviousStep}
         />
         
         {/* n8n Logs Section - Oculto */}
@@ -594,6 +831,45 @@ const ChatBox = () => {
           onClose={handleCloseSimpleBrowserControl}
         />
       )}
+
+      {showExerciseManager && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-white">Gestor de Ejercicios Dinámicos</h2>
+              <button
+                onClick={() => setShowExerciseManager(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+            <ExerciseManager
+              exercises={dynamicExercises}
+              onAddExercise={addExercise}
+              onRemoveExercise={removeExercise}
+              onUpdateExercise={updateExercise}
+              onGenerateFromVideo={generateFromVideo}
+            />
+          </div>
+        </div>
+      )}
+
+      {showServerStatus && (
+        <ServerStatus
+          isVisible={showServerStatus}
+          onClose={handleCloseServerStatus}
+        />
+      )}
+
+      {showTriggersWorkflow && (
+        <TriggersWorkflow
+          isVisible={showTriggersWorkflow}
+          onClose={handleCloseTriggersWorkflow}
+        />
+      )}
+
+      
     </div>
   );
 };

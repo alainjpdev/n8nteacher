@@ -1,0 +1,125 @@
+{
+  "workflowTitle": "Guía de Triggers de n8n",
+  "updatedAt": "{{NOW}}",
+  "triggers": [
+    {
+      "id": "manual",
+      "name": "Manual Trigger",
+      "key": "manual_trigger",
+      "category": "core",
+      "difficulty": "beginner",
+      "description": "Permite ejecutar un workflow manualmente desde el editor de n8n.",
+      "useCases": ["Probar workflows", "Depuración de nodos"],
+      "configuration": [
+        "Arrastra el nodo Manual Trigger al canvas",
+        "Conecta el resto de nodos y ejecuta el workflow"
+      ],
+      "docsUrl": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.manualtrigger/"
+    },
+    {
+      "id": "webhook",
+      "name": "Webhook",
+      "key": "webhook_trigger",
+      "category": "core",
+      "difficulty": "intermediate",
+      "description": "Recibe solicitudes HTTP externas para iniciar el workflow.",
+      "useCases": ["Integraciones con APIs", "Recepción de eventos externos"],
+      "configuration": [
+        "Agrega el nodo Webhook",
+        "Define el método (GET/POST) y la ruta",
+        "Activa el workflow para habilitar la URL pública"
+      ],
+      "docsUrl": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.webhook/"
+    },
+    {
+      "id": "schedule",
+      "name": "Schedule (Cron)",
+      "key": "schedule_trigger",
+      "category": "core",
+      "difficulty": "intermediate",
+      "description": "Ejecuta el workflow en intervalos definidos o mediante expresiones cron.",
+      "useCases": ["Tareas periódicas", "Reportes programados"],
+      "configuration": [
+        "Agrega el nodo Schedule",
+        "Elige 'Every X' o 'Cron expression'",
+        "Configura la periodicidad"
+      ],
+      "docsUrl": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.cron/"
+    },
+    {
+      "id": "email",
+      "name": "Email Trigger",
+      "key": "email_trigger",
+      "category": "email",
+      "difficulty": "intermediate",
+      "description": "Dispara el workflow cuando llegan correos nuevos (proveedor según integración).",
+      "useCases": ["Monitoreo de bandeja", "Automatizar respuestas"],
+      "configuration": [
+        "Selecciona el proveedor (IMAP/Gmail/Outlook)",
+        "Conecta credenciales",
+        "Define filtros (carpeta, asunto, remitente)"
+      ],
+      "docsUrl": "https://docs.n8n.io/integrations/"
+    },
+    {
+      "id": "database",
+      "name": "Database Trigger",
+      "key": "database_trigger",
+      "category": "data",
+      "difficulty": "advanced",
+      "description": "Dispara cuando hay cambios en la base de datos (según integración disponible).",
+      "useCases": ["Sincronización de datos", "ETL incremental"],
+      "configuration": [
+        "Selecciona el conector (Postgres/MySQL/etc.)",
+        "Configura credenciales y polling",
+        "Define la consulta o tabla a monitorear"
+      ],
+      "docsUrl": "https://docs.n8n.io/integrations/"
+    },
+    {
+      "id": "files",
+      "name": "File Watcher",
+      "key": "file_trigger",
+      "category": "files",
+      "difficulty": "advanced",
+      "description": "Detecta creación o cambios de archivos en una carpeta (según integración).",
+      "useCases": ["Procesamiento de archivos", "Ingesta de data"],
+      "configuration": [
+        "Selecciona el proveedor (S3/FTP/local)",
+        "Configura ruta y filtros",
+        "Define eventos a escuchar"
+      ],
+      "docsUrl": "https://docs.n8n.io/integrations/"
+    },
+    {
+      "id": "http_poll",
+      "name": "HTTP Poll",
+      "key": "http_polling_trigger",
+      "category": "core",
+      "difficulty": "intermediate",
+      "description": "Consulta periódicamente una API y dispara si hay cambios.",
+      "useCases": ["Monitorear APIs", "Sincronizar con servicios externos"],
+      "configuration": [
+        "Agrega HTTP Request + Schedule",
+        "Define endpoint y headers",
+        "Compara respuesta y continua si hay novedades"
+      ],
+      "docsUrl": "https://docs.n8n.io/integrations/builtin/core-nodes/"
+    },
+    {
+      "id": "websocket",
+      "name": "WebSocket Trigger",
+      "key": "websocket_trigger",
+      "category": "realtime",
+      "difficulty": "advanced",
+      "description": "Se conecta a un servidor WebSocket y dispara con cada mensaje.",
+      "useCases": ["Datos en tiempo real", "Notificaciones push"],
+      "configuration": [
+        "Configura la URL del WebSocket",
+        "Maneja mensajes entrantes",
+        "Opcional: valida formato y seguridad"
+      ],
+      "docsUrl": "https://docs.n8n.io/integrations/"
+    }
+  ]
+}
