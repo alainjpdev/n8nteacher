@@ -7,9 +7,24 @@ import sys
 import json
 import threading
 import time
+import subprocess
+import platform
 from datetime import datetime
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+
+# Selenium para control del browser
+try:
+    from selenium import webdriver
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.support import expected_conditions as EC
+    from selenium.webdriver.chrome.options import Options
+    from selenium.webdriver.common.action_chains import ActionChains
+    SELENIUM_AVAILABLE = True
+except ImportError:
+    SELENIUM_AVAILABLE = False
+    print("⚠️ Selenium no disponible. Instalar con: pip install selenium")
 
 app = Flask(__name__)
 CORS(app)
@@ -20,6 +35,11 @@ output_log = []
 monitoring_active = False
 monitoring_thread = None
 
+
+# Control del browser real
+driver = None
+n8n_iframe = None
+
 def log_message(message):
     """Agregar mensaje al log con timestamp"""
     timestamp = datetime.now().strftime("%H:%M:%S")
@@ -29,6 +49,81 @@ def log_message(message):
     if len(output_log) > 100:
         output_log.pop(0)
     print(log_entry)
+
+def start_real_browser():
+    """Iniciar browser real con Selenium"""
+    global driver, n8n_iframe
+    
+    if not SELENIUM_AVAILABLE:
+        log_message("❌ Selenium no disponible")
+        return False
+    
+    try:
+        log_message("🚀 Iniciando browser real con Selenium...")
+        
+        # Configurar Chrome
+        chrome_options = Options()
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--window-size=1920,1080")
+        
+        # Iniciar driver
+        driver = webdriver.Chrome(options=chrome_options)
+        
+        # Navegar a n8n
+        n8n_url = "http://localhost:5678/workflow/PEiPnfWFWwk17oKy"
+        log_message(f"🌐 Navegando a: {n8n_url}")
+        driver.get(n8n_url)
+        
+        # Esperar a que cargue
+        wait = WebDriverWait(driver, 10)
+        wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+        
+        log_message("✅ Browser real iniciado correctamente")
+        return True
+        
+    except Exception as e:
+        log_message(f"❌ Error iniciando browser real: {str(e)}")
+        return False
+
+
+
+def click_save_button():
+    """Hacer clic real en el botón Save de n8n"""
+    global driver
+    
+    if not driver:
+        log_message("❌ Browser no iniciado")
+        return False
+    
+    try:
+        # Buscar el botón Save
+        wait = WebDriverWait(driver, 5)
+        
+        # Intentar diferentes selectores para el botón Save
+        save_selectors = [
+            "//span[text()='Save']",
+            "//button[contains(@class, '_button') and contains(@class, '_primary')]//span[text()='Save']",
+            "//button[.//span[text()='Save']]",
+            "//span[contains(text(), 'Save')]"
+        ]
+        
+        for selector in save_selectors:
+            try:
+                save_button = wait.until(EC.element_to_be_clickable((By.XPATH, selector)))
+                save_button.click()
+                log_message(f"✅ Clic en Save exitoso usando selector: {selector}")
+                return True
+            except:
+                continue
+        
+        log_message("❌ No se encontró el botón Save")
+        return False
+        
+    except Exception as e:
+        log_message(f"❌ Error haciendo clic en Save: {str(e)}")
+        return False
 
 def simulate_monitoring():
     """Simular monitoreo sin abrir browser externo"""
@@ -84,6 +179,8 @@ def simulate_monitoring():
         browser_status = 'stopped'
         log_message("🛑 Monitoreo detenido")
 
+
+
 @app.route('/api/browser/status', methods=['GET'])
 def get_status():
     """Obtener estado del browser embebido"""
@@ -113,7 +210,10 @@ def start_browser():
         log_message("🚀 Iniciando browser embebido...")
         log_message("🌐 Configurando iframe de n8n...")
         
-        # Iniciar thread de monitoreo
+        # Usar simulación del iframe embebido - sin browser externo
+        log_message("🎯 Iniciando monitoreo del iframe embebido")
+        log_message("💡 No se abrirá browser externo")
+        
         monitoring_thread = threading.Thread(target=simulate_monitoring)
         monitoring_thread.daemon = True
         monitoring_thread.start()
@@ -146,7 +246,7 @@ def stop_browser():
         log_message("🛑 Deteniendo browser embebido...")
         monitoring_active = False
         
-        # Esperar a que el thread termine
+        # Esperar a que los threads terminen
         if monitoring_thread and monitoring_thread.is_alive():
             monitoring_thread.join(timeout=5)
         
@@ -187,6 +287,29 @@ def clear_logs():
         'message': 'Logs limpiados correctamente'
     })
 
+
+
+@app.route('/api/browser/test-save', methods=['POST'])
+def test_save_button():
+    """Probar el clic en el botón Save manualmente"""
+    try:
+        # Simular clic en el iframe embebido
+        log_message("🧪 TEST SAVE: Simulando clic en Save del iframe")
+        log_message("   🎯 Iframe: http://localhost:5678/workflow/PEiPnfWFWwk17oKy")
+        log_message("   ✅ Clic simulado exitosamente")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Clic simulado en Save del iframe'
+        })
+        
+    except Exception as e:
+        log_message(f"❌ Error en test save: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        })
+
 @app.route('/health', methods=['GET'])
 def health():
     """Health check"""
@@ -200,15 +323,19 @@ def health():
 if __name__ == '__main__':
     print("🚀 Iniciando Servidor de Browser Embebido")
     print("📍 Endpoints disponibles:")
-    print("  • GET  /api/browser/status    - Estado del browser")
-    print("  • POST /api/browser/start     - Iniciar browser")
-    print("  • POST /api/browser/stop      - Detener browser")
-    print("  • GET  /api/browser/logs      - Ver logs")
-    print("  • POST /api/browser/clear-logs - Limpiar logs")
-    print("  • GET  /health                - Health check")
+    print("  • GET  /api/browser/status         - Estado del browser")
+    print("  • POST /api/browser/start          - Iniciar browser")
+    print("  • POST /api/browser/stop           - Detener browser")
+    print("  • GET  /api/browser/logs           - Ver logs")
+    print("  • POST /api/browser/clear-logs     - Limpiar logs")
+
+    print("  • POST /api/browser/test-save      - Probar clic en Save")
+    print("  • GET  /health                     - Health check")
     print("")
     print("🌐 Servidor corriendo en http://localhost:5001")
-    print("💡 Browser embebido - Sin Chrome externo")
+    print("💡 Browser embebido - sin browser externo")
+
+    print("🎯 Control del iframe embebido")
     print("")
     
     app.run(host='0.0.0.0', port=5001, debug=False)

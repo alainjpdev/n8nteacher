@@ -18,6 +18,17 @@ const ChatContent = ({
 }) => {
   const [showConnectionBanner, setShowConnectionBanner] = React.useState(true);
 
+  // Estado para tracking de pasos
+  const [stepStatus, setStepStatus] = React.useState({
+    step1Completed: false,
+    step2Completed: false,
+    step3Completed: false
+  });
+
+
+
+
+
   // Ocultar banner de conexión después de 8 segundos
   React.useEffect(() => {
     if (isInitialized && n8nConnected && !n8nLoading && !n8nError) {
@@ -35,6 +46,120 @@ const ChatContent = ({
       setShowConnectionBanner(false);
     }
   }, [isInitialized, n8nConnected, n8nLoading, n8nError]);
+
+  // Función para verificar si el Manual Trigger está presente
+  const checkManualTrigger = React.useCallback(async () => {
+    try {
+      const response = await fetch('http://localhost:3001/api/workflows/PEiPnfWFWwk17oKy');
+      if (response.ok) {
+        const workflow = await response.json();
+        
+        // Buscar nodos de tipo Manual Trigger
+        const hasManualTrigger = workflow.nodes?.some(node => 
+          node.type === 'n8n-nodes-base.manualTrigger' || 
+          (node.typeVersion === 1 && node.type.includes('manual'))
+        );
+        
+        if (hasManualTrigger && !stepStatus.step2Completed) {
+          setStepStatus(prev => ({ 
+            ...prev, 
+            step1Completed: true, // Auto-completar paso 1 también
+            step2Completed: true 
+          }));
+          console.log('✅ Manual Trigger detectado! Pasos 1 y 2 completados.');
+        } else if (!hasManualTrigger) {
+          // Silenciar logs excesivos - solo mostrar cada 30 segundos
+          const now = Date.now();
+          if (!window.lastManualTriggerLog || now - window.lastManualTriggerLog > 30000) {
+            console.log('🔍 No Manual Trigger found yet...');
+            window.lastManualTriggerLog = now;
+          }
+        }
+        
+        return hasManualTrigger;
+      }
+    } catch (error) {
+      console.error('Error verificando Manual Trigger:', error);
+    }
+    return false;
+  }, [stepStatus.step2Completed]);
+
+  // Función para verificar si el workflow ha sido guardado
+  const checkWorkflowSaved = React.useCallback(async () => {
+    try {
+      const response = await fetch('http://localhost:3001/api/workflows/PEiPnfWFWwk17oKy');
+      if (response.ok) {
+        const workflow = await response.json();
+        
+        // Verificar si hay un Manual Trigger presente
+        const hasManualTrigger = workflow.nodes?.some(node => 
+          node.type === 'n8n-nodes-base.manualTrigger' || 
+          (node.typeVersion === 1 && node.type.includes('manual'))
+        );
+        
+        // Verificar si el workflow tiene metadata de guardado reciente
+        const hasRecentSave = workflow.meta?.savedAt && 
+          (new Date().getTime() - new Date(workflow.meta.savedAt).getTime()) < 60000; // Último minuto
+        
+        // Log detallado para debug
+        console.log('🔍 Verificando guardado:', {
+          hasManualTrigger,
+          hasRecentSave,
+          savedAt: workflow.meta?.savedAt,
+          step3Completed: stepStatus.step3Completed,
+          nodes: workflow.nodes?.length || 0
+        });
+        
+        // Si hay Manual Trigger Y se guardó recientemente, completar todos los pasos
+        if (hasManualTrigger && hasRecentSave && !stepStatus.step3Completed) {
+          setStepStatus(prev => ({ 
+            ...prev, 
+            step1Completed: true,
+            step2Completed: true,
+            step3Completed: true 
+          }));
+          console.log('🎉 ¡Manual Trigger + Save detectado! Todos los pasos completados automáticamente.');
+        }
+        
+        return hasRecentSave;
+      }
+    } catch (error) {
+      console.error('Error verificando guardado del workflow:', error);
+    }
+    return false;
+  }, [stepStatus.step3Completed]);
+
+
+
+  // Verificar estado del workflow cada 3 segundos
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      checkManualTrigger();
+      // Verificar guardado siempre para detectar Manual Trigger + Save
+      checkWorkflowSaved();
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [checkManualTrigger, checkWorkflowSaved]);
+
+  // Log temporal para verificar el estado
+  React.useEffect(() => {
+    if (stepStatus.step2Completed && stepStatus.step3Completed) {
+      console.log('🎉 ¡Tarea completada! Botón Siguiente habilitado');
+    }
+    
+    // Log detallado del estado
+    console.log('🔍 Estado actual:', {
+      step1: stepStatus.step1Completed,
+      step2: stepStatus.step2Completed,
+      step3: stepStatus.step3Completed,
+      botonHabilitado: stepStatus.step2Completed && stepStatus.step3Completed
+    });
+  }, [stepStatus.step2Completed, stepStatus.step3Completed]);
+
+
+
+
   return (
     <div className="flex-1 p-4 bg-gray-900">
       <div className={`transition-opacity duration-500 h-full ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
@@ -222,18 +347,29 @@ const ChatContent = ({
 
             <button
               onClick={onNextStep}
-              disabled={currentStep === instructions.length - 1}
+              disabled={currentStep === instructions.length - 1 || !(stepStatus.step2Completed && stepStatus.step3Completed)}
               className={`flex items-center space-x-2 px-4 py-2 rounded-md font-medium transition-colors ${
-                currentStep === instructions.length - 1
+                currentStep === instructions.length - 1 || !(stepStatus.step2Completed && stepStatus.step3Completed)
                   ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
                   : 'bg-green-600 text-white hover:bg-green-700'
               }`}
             >
-              <span>Siguiente</span>
+              <span>
+                {stepStatus.step2Completed && stepStatus.step3Completed ? '🚀 Siguiente' : 'Siguiente'}
+              </span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
+            
+            {/* Mensaje cuando el botón Siguiente se habilita */}
+            {stepStatus.step2Completed && stepStatus.step3Completed && (
+              <div className="mt-2 text-center">
+                <div className="text-xs text-green-400 animate-pulse">
+                  ✅ ¡Puedes continuar al siguiente ejercicio!
+                </div>
+              </div>
+            )}
           </div>
           
           {/* Current Instruction */}
@@ -249,23 +385,183 @@ const ChatContent = ({
               </>
             ) : (
               <div className="text-center py-8">
+
+
                 <h3 className="text-xl font-semibold text-white mb-4">
                   🎯 Clase 1: Introducción a los Triggers de n8n
                 </h3>
-                <p className="text-gray-300 leading-relaxed mb-4">
-                  Presiona el botón de <strong>"+"</strong> que se encuentra en el centro de la pantalla.
-                </p>
-                <div className="bg-gray-800/30 border border-gray-600 rounded-lg p-4 max-w-md mx-auto">
-                  <div className="text-center">
-                    <div className="text-4xl mb-2 text-white">+</div>
-                    <p className="text-sm text-gray-200 font-medium">
-                      Busca este botón blanco en el centro de la pantalla
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      Es el primer paso para crear cualquier workflow en n8n
-                    </p>
+
+
+                
+                {/* Pasos de la clase directamente en el contenido */}
+                <div className="space-y-6 mb-6">
+                  {/* Paso 1 */}
+                  <div className={`border rounded-lg p-4 transition-all duration-300 ${
+                    stepStatus.step1Completed 
+                      ? 'bg-green-900/20 border-green-700/30' 
+                      : 'bg-blue-900/20 border-blue-700/30'
+                  }`}>
+                    <div className="flex items-start space-x-3">
+                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                        stepStatus.step1Completed 
+                          ? 'bg-green-600 text-white' 
+                          : 'bg-blue-600 text-white'
+                      }`}>
+                        {stepStatus.step1Completed ? '✅' : '1'}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-lg font-semibold text-white mb-2">
+                          Presionar el botón '+'
+                        </h4>
+                        <p className="text-gray-300">
+                          Presiona el botón <strong>"+"</strong> que se encuentra en el centro de la pantalla de n8n.
+                        </p>
+
+                        {stepStatus.step1Completed && (
+                          <div className="mt-2 animate-pulse">
+                            <div className="flex items-center space-x-2 bg-green-600 text-white px-3 py-1 rounded-lg shadow-lg">
+                              <div className="text-lg">✨</div>
+                              <div className="text-xs font-medium">
+                                ¡Paso completado!
+                              </div>
+                              <div className="text-lg">✨</div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Paso 2 */}
+                  <div className={`border rounded-lg p-4 transition-all duration-300 ${
+                    stepStatus.step2Completed 
+                      ? 'bg-green-900/20 border-green-700/30' 
+                      : 'bg-green-900/20 border-green-700/30'
+                  }`}>
+                    <div className="flex items-start space-x-3">
+                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                        stepStatus.step2Completed 
+                          ? 'bg-green-600 text-white' 
+                          : 'bg-green-600 text-white'
+                      }`}>
+                        {stepStatus.step2Completed ? '✅' : '2'}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-lg font-semibold text-white mb-2">
+                          Seleccionar Manual Trigger
+                        </h4>
+                        <p className="text-gray-300 mb-3">
+                          En el panel lateral que aparece, busca la sección <strong>"Triggers"</strong> y selecciona <strong>"Manual Trigger"</strong>.
+                        </p>
+                        <div className="bg-green-800/30 border border-green-600/30 rounded-lg p-3">
+                          <div className="text-center">
+                            <div className="text-2xl mb-2">📋</div>
+                            <p className="text-sm text-green-200 font-medium">
+                              Aparecerá un panel lateral con categorías de nodos
+                            </p>
+                            <p className="text-xs text-green-300 mt-1">
+                              Busca la sección "Triggers" y selecciona "Manual Trigger"
+                            </p>
+                          </div>
+                        </div>
+                            
+
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Paso 3 */}
+                  <div className={`border rounded-lg p-4 transition-all duration-300 ${
+                    stepStatus.step3Completed 
+                      ? 'bg-green-900/20 border-green-700/30' 
+                      : 'bg-blue-900/20 border-blue-700/30'
+                  }`}>
+                    <div className="flex items-start space-x-3">
+                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                        stepStatus.step3Completed 
+                          ? 'bg-green-600 text-white' 
+                          : 'bg-blue-600 text-white'
+                      }`}>
+                        {stepStatus.step3Completed ? '✅' : '3'}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-lg font-semibold text-white mb-2">
+                          Guardar el Workflow
+                        </h4>
+                        <p className="text-gray-300 mb-3">
+                          Haz clic en el botón <strong>"Save"</strong> que se encuentra en la parte superior derecha de la pantalla para guardar tu workflow.
+                        </p>
+                        <div className="bg-blue-800/30 border border-blue-600/30 rounded-lg p-3">
+                          <div className="text-center">
+                            <div className="text-2xl mb-2">💾</div>
+                            <p className="text-sm text-blue-200 font-medium">
+                              Busca el botón "Save" en la barra superior
+                            </p>
+                            <p className="text-xs text-blue-300 mt-1">
+                              Es importante guardar para que los cambios se mantengan
+                            </p>
+                          </div>
+                        </div>
+
+                        {stepStatus.step3Completed && (
+                          <div className="mt-3 space-y-3">
+                            <div className="animate-pulse">
+                              <div className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg">
+                                <div className="text-2xl">🚀</div>
+                                <div className="text-sm font-medium">
+                                  ¡Workflow guardado exitosamente!
+                                </div>
+                                <div className="text-2xl">🚀</div>
+                              </div>
+                            </div>
+                            
+                            {/* Caja minimalista de tarea completada */}
+                            <div className="p-4 bg-green-900/20 border border-green-700/30 rounded-lg">
+                              <div className="text-center">
+                                <div className="text-2xl mb-2">✅</div>
+                                <div className="text-green-300 font-medium">
+                                  Tarea completada
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Botón temporal para simular guardado */}
+                        {stepStatus.step2Completed && !stepStatus.step3Completed && (
+                          <div className="mt-3">
+                            <button
+                              onClick={async () => {
+                                try {
+                                  const response = await fetch('http://localhost:3001/api/workflows/PEiPnfWFWwk17oKy/simulate-save', {
+                                    method: 'POST',
+                                    headers: {
+                                      'Content-Type': 'application/json'
+                                    }
+                                  });
+                                  if (response.ok) {
+                                    console.log('🎯 Simulación de guardado enviada');
+                                  }
+                                } catch (error) {
+                                  console.error('Error simulando guardado:', error);
+                                }
+                              }}
+                              className="px-3 py-1 bg-yellow-600 text-white text-xs rounded hover:bg-yellow-700"
+                            >
+                              🎯 Simular Guardado
+                            </button>
+                          </div>
+                        )}
+
+
+
+                      </div>
+                    </div>
                   </div>
                 </div>
+
+                
+
               </div>
             )}
             
@@ -323,28 +619,30 @@ const ChatContent = ({
   );
 };
 
-// Helper function to get action descriptions
-const getActionDescription = (action) => {
-  const descriptions = {
-    // Acciones generales
-    'create_webhook_workflow': 'Creará un nuevo workflow con trigger de webhook',
-    'add_set_node': 'Agregará un nodo Set para procesar datos',
-    'add_validation_node': 'Agregará un nodo IF para validar email',
-    'add_database_node': 'Agregará un nodo PostgreSQL para guardar datos',
-    'add_email_node': 'Agregará un nodo Email para enviar notificaciones',
-    'test_workflow': 'Ejecutará el workflow con datos de prueba',
-    
-    // Acciones específicas de triggers
-    'introduction_triggers': 'Te introducirá a los conceptos básicos de triggers en n8n',
-    'manual_trigger': 'Te guiará para crear y configurar un trigger manual',
-    'webhook_trigger': 'Te ayudará a configurar un trigger webhook para recibir datos externos',
-    'schedule_trigger': 'Te mostrará cómo configurar un trigger de programación temporal',
-    'email_trigger': 'Te enseñará a configurar un trigger para monitorear emails',
-    'database_trigger': 'Te guiará para configurar un trigger que monitoree cambios en bases de datos',
-    'file_trigger': 'Te ayudará a configurar un trigger para monitorear cambios en archivos',
-    'final_project': 'Te guiará para crear un workflow completo combinando múltiples triggers'
+
+
+  // Helper function to get action descriptions
+  const getActionDescription = (action) => {
+    const descriptions = {
+      // Acciones generales
+      'create_webhook_workflow': 'Creará un nuevo workflow con trigger de webhook',
+      'add_set_node': 'Agregará un nodo Set para procesar datos',
+      'add_validation_node': 'Agregará un nodo IF para validar email',
+      'add_database_node': 'Agregará un nodo PostgreSQL para guardar datos',
+      'add_email_node': 'Agregará un nodo Email para enviar notificaciones',
+      'test_workflow': 'Ejecutará el workflow con datos de prueba',
+      
+      // Acciones específicas de triggers
+      'introduction_triggers': 'Te introducirá a los conceptos básicos de triggers en n8n',
+      'manual_trigger': 'Te guiará para crear y configurar un trigger manual',
+      'webhook_trigger': 'Te ayudará a configurar un trigger webhook para recibir datos externos',
+      'schedule_trigger': 'Te mostrará cómo configurar un trigger de programación temporal',
+      'email_trigger': 'Te enseñará a configurar un trigger para monitorear emails',
+      'database_trigger': 'Te guiará para configurar un trigger que monitoree cambios en bases de datos',
+      'file_trigger': 'Te ayudará a configurar un trigger para monitorear cambios en archivos',
+      'final_project': 'Te guiará para crear un workflow completo combinando múltiples triggers'
+    };
+    return descriptions[action] || 'Acción no definida';
   };
-  return descriptions[action] || 'Acción no definida';
-};
 
 export default ChatContent; 

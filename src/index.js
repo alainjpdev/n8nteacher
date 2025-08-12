@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import './setupTests'; // Deshabilitar logs de React DevTools
 import './index.css';
 import App from './App';
 

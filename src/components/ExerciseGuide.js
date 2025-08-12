@@ -5,25 +5,19 @@ const ExerciseGuide = ({ exercise, onComplete, onClose }) => {
   const [isCompleted, setIsCompleted] = useState(false);
   const [stepCompleted, setStepCompleted] = useState(false);
 
-  // Pasos simples para crear un workflow desde cero
+  // Pasos específicos para crear un workflow desde cero
   const steps = [
     {
       id: 1,
-      title: "Crear Nuevo Workflow",
-      description: "Presiona el botón '+' (Add) que se encuentra al centro de la instancia de n8n",
-      hint: "Busca el botón azul grande con el símbolo '+' en el centro del área de trabajo vacía"
+      title: "Presionar el botón '+'",
+      description: "Presiona el botón '+' que se encuentra en el centro de la pantalla de n8n",
+      hint: "Busca el botón blanco con el símbolo '+' en el centro del área de trabajo vacía"
     },
     {
       id: 2,
       title: "Seleccionar Manual Trigger",
-      description: "En el menú desplegable que aparece, busca y selecciona 'Manual Trigger'",
-      hint: "El Manual Trigger suele estar en la primera sección llamada 'Triggers'"
-    },
-    {
-      id: 3,
-      title: "Configurar el Trigger",
-      description: "Configura el nombre del trigger y sus parámetros básicos",
-      hint: "Puedes cambiar el nombre del nodo haciendo doble clic en él"
+      description: "En el panel lateral que aparece, busca la sección 'Triggers' y selecciona 'Manual Trigger'",
+      hint: "El Manual Trigger permite ejecutar el workflow manualmente desde la interfaz de n8n"
     }
   ];
 
@@ -122,35 +116,35 @@ const ExerciseGuide = ({ exercise, onComplete, onClose }) => {
               </div>
             </div>
             
-            {/* Visual guide for step 1 */}
-            {currentStep === 0 && (
-              <div className="mt-4 p-4 bg-blue-100 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
-                <div className="text-center">
-                  <div className="text-4xl mb-2">➕</div>
-                  <p className="text-sm text-blue-800 dark:text-blue-200 font-medium">
-                    Busca este botón azul grande en el centro de la pantalla
-                  </p>
-                  <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">
-                    Es el primer paso para crear cualquier workflow en n8n
-                  </p>
-                </div>
-              </div>
-            )}
+                            {/* Visual guide for step 1 */}
+                {currentStep === 0 && (
+                  <div className="mt-4 p-4 bg-blue-100 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div className="text-center">
+                      <div className="text-4xl mb-2 text-white">+</div>
+                      <p className="text-sm text-blue-800 dark:text-blue-200 font-medium">
+                        Busca este botón blanco en el centro de la pantalla
+                      </p>
+                      <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">
+                        Es el primer paso para crear cualquier workflow en n8n
+                      </p>
+                    </div>
+                  </div>
+                )}
 
-            {/* Visual guide for step 2 */}
-            {currentStep === 1 && (
-              <div className="mt-4 p-4 bg-green-100 dark:bg-green-900/30 rounded-lg border border-green-200 dark:border-green-800">
-                <div className="text-center">
-                  <div className="text-2xl mb-2">📋</div>
-                  <p className="text-sm text-green-800 dark:text-green-200 font-medium">
-                    Aparecerá un menú con categorías de nodos
-                  </p>
-                  <p className="text-xs text-green-600 dark:text-green-300 mt-1">
-                    Busca la sección "Triggers" y selecciona "Manual Trigger"
-                  </p>
-                </div>
-              </div>
-            )}
+                {/* Visual guide for step 2 */}
+                {currentStep === 1 && (
+                  <div className="mt-4 p-4 bg-green-100 dark:bg-green-900/30 rounded-lg border border-green-200 dark:border-green-800">
+                    <div className="text-center">
+                      <div className="text-2xl mb-2">📋</div>
+                      <p className="text-sm text-green-800 dark:text-green-200 font-medium">
+                        Aparecerá un panel lateral con categorías de nodos
+                      </p>
+                      <p className="text-xs text-green-600 dark:text-green-300 mt-1">
+                        Busca la sección "Triggers" y selecciona "Manual Trigger"
+                      </p>
+                    </div>
+                  </div>
+                )}
           </div>
         </div>
       </div>

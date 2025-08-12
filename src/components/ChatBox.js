@@ -2,15 +2,13 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import ChatHeader from './ChatHeader';
 import ChatContent from './ChatContent';
 import ChatFooter from './ChatFooter';
-import ApiConfig from './ApiConfig';
-import WorkflowSelector from './WorkflowSelector';
-import InitialSetup from './InitialSetup';
+
 import BrowserMonitor from './BrowserMonitor';
 import SimpleBrowserControl from './SimpleBrowserControl';
 import ExerciseManager from './ExerciseManager';
 import TriggersWorkflow from './TriggersWorkflow';
 import ServerStatus from './ServerStatus';
-import ExerciseSelector from './ExerciseSelector';
+
 import ExerciseGuide from './ExerciseGuide';
 // import N8nLogs from './N8nLogs';
 import n8nMonitorService from '../services/n8nMonitorService';
@@ -56,7 +54,7 @@ const ChatBox = () => {
   
   // Exercise Manager states
   const [showExerciseManager, setShowExerciseManager] = useState(false);
-  const [showExerciseSelector, setShowExerciseSelector] = useState(false);
+
   const [showExerciseGuide, setShowExerciseGuide] = useState(false);
   const [currentExercise, setCurrentExercise] = useState(null);
   
@@ -66,7 +64,7 @@ const ChatBox = () => {
   // Triggers modal state
   const [showTriggersWorkflow, setShowTriggersWorkflow] = useState(false);
 
-  // Sistema de ejercicios simplificado - Solo usa ExerciseSelector
+  // Sistema de ejercicios simplificado - Directo al ExerciseGuide
   const instructions = useMemo(() => [], []);
 
   // n8n Log callback - Comentado ya que los logs están ocultos
@@ -365,13 +363,7 @@ const ChatBox = () => {
     }
   }, []);
 
-  // Handle exercise selection
-  const handleExerciseSelected = useCallback((exercise) => {
-    console.log('🎯 Ejercicio seleccionado:', exercise);
-    setCurrentExercise(exercise);
-    setShowExerciseSelector(false);
-    setShowExerciseGuide(true);
-  }, []);
+
 
   // Handle exercise completion
   const handleExerciseComplete = useCallback(() => {
@@ -486,6 +478,23 @@ const ChatBox = () => {
       checkVoices();
     }
   }, []);
+
+  // Event listener para abrir la guía de ejercicios
+  useEffect(() => {
+    const handleOpenExerciseGuide = (event) => {
+      const exercise = event.detail;
+      setCurrentExercise(exercise);
+      setShowExerciseGuide(true);
+    };
+
+    window.addEventListener('openExerciseGuide', handleOpenExerciseGuide);
+    
+    return () => {
+      window.removeEventListener('openExerciseGuide', handleOpenExerciseGuide);
+    };
+  }, []);
+
+
 
   // Auto-start speech when ready and user has interacted
   useEffect(() => {
@@ -622,7 +631,7 @@ const ChatBox = () => {
           onOpenBrowserMonitor={handleOpenBrowserMonitor}
           onOpenSimpleBrowserControl={handleOpenSimpleBrowserControl}
           onOpenExerciseManager={() => setShowExerciseManager(true)}
-          onOpenExerciseSelector={() => setShowExerciseSelector(true)}
+
           onOpenServerStatus={handleOpenServerStatus}
           onOpenTriggersWorkflow={handleOpenTriggersWorkflow}
         />
@@ -727,12 +736,7 @@ const ChatBox = () => {
         />
       )}
 
-      {showExerciseSelector && (
-        <ExerciseSelector
-          onExerciseSelected={handleExerciseSelected}
-          onClose={() => setShowExerciseSelector(false)}
-        />
-      )}
+
 
       {showExerciseGuide && currentExercise && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

@@ -19,6 +19,7 @@ browser_process = None
 browser_running = False
 output_log = []
 
+
 def run_browser_script():
     """Ejecutar el script de browser en segundo plano"""
     global browser_process, browser_running, output_log
@@ -119,6 +120,8 @@ def stop_browser():
             'success': False, 
             'message': f'Error deteniendo browser: {str(e)}'
         })
+
+
 
 @app.route('/api/browser/logs', methods=['GET'])
 def get_logs():

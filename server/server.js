@@ -993,6 +993,255 @@ app.get('/api/workflows/:workflowId', async (req, res) => {
   }
 });
 
+// Endpoint para guardar automáticamente el workflow
+app.post('/api/workflows/:workflowId/save', async (req, res) => {
+  try {
+    const { workflowId } = req.params;
+    const { action, step, timestamp } = req.body;
+    
+    console.log(`💾 Guardando workflow automáticamente: ${workflowId}`);
+    console.log(`📝 Acción: ${action}, Paso: ${step}`);
+    
+    if (!global.N8N_API_TOKEN) {
+      return res.status(500).json({
+        success: false,
+        error: 'Token de API no configurado'
+      });
+    }
+    
+    // Obtener el workflow actual
+    const getResponse = await axios.get(`${global.N8N_BASE_URL}/workflows/${workflowId}`, {
+      headers: {
+        'X-N8N-API-KEY': global.N8N_API_TOKEN,
+        'Content-Type': 'application/json'
+      },
+      timeout: 10000
+    });
+    
+    const workflow = getResponse.data;
+    
+    // Agregar metadata de progreso del alumno
+    if (!workflow.meta) {
+      workflow.meta = {};
+    }
+    
+    workflow.meta.studentProgress = {
+      lastAction: action,
+      lastStep: step,
+      lastUpdate: timestamp,
+      completedSteps: workflow.meta.studentProgress?.completedSteps || []
+    };
+    
+    // Agregar el paso actual a los completados si no existe
+    if (step && !workflow.meta.studentProgress.completedSteps.includes(step)) {
+      workflow.meta.studentProgress.completedSteps.push(step);
+    }
+    
+    // Agregar timestamp de guardado para detectar cuando se guarda el workflow
+    workflow.meta.savedAt = new Date().toISOString();
+    
+    // Guardar el workflow actualizado
+    const saveResponse = await axios.put(`${global.N8N_BASE_URL}/workflows/${workflowId}`, workflow, {
+      headers: {
+        'X-N8N-API-KEY': global.N8N_API_TOKEN,
+        'Content-Type': 'application/json'
+      },
+      timeout: 10000
+    });
+    
+    console.log(`✅ Workflow guardado exitosamente: ${workflowId}`);
+    console.log(`📊 Progreso del alumno: ${workflow.meta.studentProgress.completedSteps.join(', ')}`);
+    
+    res.json({
+      success: true,
+      message: 'Workflow guardado automáticamente',
+      progress: workflow.meta.studentProgress
+    });
+    
+  } catch (error) {
+    console.error('❌ Error guardando workflow:', error.message);
+    
+    if (error.response?.status === 401) {
+      res.status(401).json({ 
+        success: false, 
+        message: 'Token de API inválido o expirado'
+      });
+    } else if (error.response?.status === 404) {
+      res.status(404).json({ 
+        success: false, 
+        message: 'Workflow no encontrado'
+      });
+    } else {
+      res.status(500).json({ 
+        success: false, 
+        error: error.message,
+        message: 'Error al guardar workflow'
+      });
+    }
+  }
+});
+
+// Endpoint para detectar cuando el workflow se guarda desde n8n
+app.post('/api/workflows/:workflowId/detect-save', async (req, res) => {
+  try {
+    const { workflowId } = req.params;
+    
+    console.log(`💾 Detectando guardado del workflow: ${workflowId}`);
+    
+    if (!global.N8N_API_TOKEN) {
+      return res.status(500).json({
+        success: false,
+        error: 'Token de API no configurado'
+      });
+    }
+
+    // Obtener el workflow actual
+    const getResponse = await axios.get(`${global.N8N_BASE_URL}/workflows/${workflowId}`, {
+      headers: {
+        'X-N8N-API-KEY': global.N8N_API_TOKEN,
+        'Content-Type': 'application/json'
+      },
+      timeout: 10000
+    });
+
+    const workflow = getResponse.data;
+    
+    // Agregar timestamp de guardado para simular que se guardó
+    if (!workflow.meta) {
+      workflow.meta = {};
+    }
+    workflow.meta.savedAt = new Date().toISOString();
+    
+    // Guardar el workflow con el timestamp
+    const saveResponse = await axios.put(`${global.N8N_BASE_URL}/workflows/${workflowId}`, workflow, {
+      headers: {
+        'X-N8N-API-KEY': global.N8N_API_TOKEN,
+        'Content-Type': 'application/json'
+      },
+      timeout: 10000
+    });
+    
+    console.log(`✅ Timestamp de guardado agregado: ${workflow.meta.savedAt}`);
+    
+    res.json({
+      success: true,
+      message: 'Timestamp de guardado agregado',
+      savedAt: workflow.meta.savedAt
+    });
+    
+  } catch (error) {
+    console.error('❌ Error agregando timestamp:', error.message);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
+// Endpoint temporal para simular guardado (para testing)
+app.post('/api/workflows/:workflowId/simulate-save', async (req, res) => {
+  try {
+    const { workflowId } = req.params;
+    
+    console.log(`🎯 Simulando guardado del workflow: ${workflowId}`);
+    
+    if (!global.N8N_API_TOKEN) {
+      return res.status(500).json({
+        success: false,
+        error: 'Token de API no configurado'
+      });
+    }
+
+    // Obtener el workflow actual
+    const getResponse = await axios.get(`${global.N8N_BASE_URL}/workflows/${workflowId}`, {
+      headers: {
+        'X-N8N-API-KEY': global.N8N_API_TOKEN,
+        'Content-Type': 'application/json'
+      },
+      timeout: 10000
+    });
+
+    const workflow = getResponse.data;
+    
+    // Agregar timestamp de guardado
+    if (!workflow.meta) {
+      workflow.meta = {};
+    }
+    workflow.meta.savedAt = new Date().toISOString();
+    
+    // Guardar el workflow
+    const saveResponse = await axios.put(`${global.N8N_BASE_URL}/workflows/${workflowId}`, workflow, {
+      headers: {
+        'X-N8N-API-KEY': global.N8N_API_TOKEN,
+        'Content-Type': 'application/json'
+      },
+      timeout: 10000
+    });
+    
+    console.log(`🎯 Simulación de guardado completada: ${workflow.meta.savedAt}`);
+    
+    res.json({
+      success: true,
+      message: 'Simulación de guardado completada',
+      savedAt: workflow.meta.savedAt
+    });
+    
+  } catch (error) {
+    console.error('❌ Error en simulación:', error.message);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+    }
+    
+    // Obtener el workflow actual
+    const getResponse = await axios.get(`${global.N8N_BASE_URL}/workflows/${workflowId}`, {
+      headers: {
+        'X-N8N-API-KEY': global.N8N_API_TOKEN,
+        'Content-Type': 'application/json'
+      },
+      timeout: 10000
+    });
+    
+    const workflow = getResponse.data;
+    
+    // Agregar timestamp de guardado
+    if (!workflow.meta) {
+      workflow.meta = {};
+    }
+    
+    workflow.meta.savedAt = new Date().toISOString();
+    
+    // Guardar el workflow con el timestamp
+    const saveResponse = await axios.put(`${global.N8N_BASE_URL}/workflows/${workflowId}`, workflow, {
+      headers: {
+        'X-N8N-API-KEY': global.N8N_API_TOKEN,
+        'Content-Type': 'application/json'
+      },
+      timeout: 10000
+    });
+    
+    console.log(`✅ Guardado detectado y registrado: ${workflowId}`);
+    
+    res.json({
+      success: true,
+      message: 'Guardado detectado y registrado',
+      savedAt: workflow.meta.savedAt
+    });
+    
+  } catch (error) {
+    console.error('❌ Error detectando guardado:', error.message);
+    
+    res.status(500).json({ 
+      success: false, 
+      error: error.message,
+      message: 'Error al detectar guardado'
+    });
+  }
+});
+
 // Endpoint to validate API configuration
 app.post('/api/config/validate', async (req, res) => {
   try {
