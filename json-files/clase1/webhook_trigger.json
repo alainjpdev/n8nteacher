@@ -1,0 +1,94 @@
+{
+  "name": "Webhook Trigger Exercise",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook-exercise",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "webhook-exercise"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Procesar datos del webhook\nconst data = $input.first().json;\n\n// Validar que los datos contengan los campos requeridos\nif (!data.name || !data.email) {\n  throw new Error('Datos incompletos: se requiere name y email');\n}\n\n// Transformar datos\nreturn {\n  json: {\n    processedName: data.name.toUpperCase(),\n    processedEmail: data.email.toLowerCase(),\n    timestamp: new Date().toISOString(),\n    status: 'processed'\n  }\n};"
+      },
+      "id": "data-processor",
+      "name": "Data Processor",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Datos procesados correctamente\",\n  \"data\": $json\n}"
+      },
+      "id": "response-node",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [680, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Data Processor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Processor": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "versionId": "1",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "webhook-exercise-workflow",
+  "tags": ["ejercicio", "webhook", "clase1"],
+  "exercise": {
+    "title": "Webhook Trigger - Procesamiento de Datos",
+    "description": "Aprende a crear y configurar un webhook trigger para recibir datos externos y procesarlos",
+    "difficulty": "beginner",
+    "duration": "15 minutes",
+    "objectives": [
+      "Configurar un webhook trigger",
+      "Procesar datos JSON entrantes",
+      "Validar datos de entrada",
+      "Responder con datos procesados"
+    ],
+    "steps": [
+      "Configura el webhook trigger con método POST",
+      "Agrega un nodo Code para procesar los datos",
+      "Implementa validación de campos requeridos",
+      "Configura el nodo Response para devolver resultados"
+    ],
+    "testData": {
+      "name": "Juan Pérez",
+      "email": "juan.perez@ejemplo.com"
+    }
+  }
+}

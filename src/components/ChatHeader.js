@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ChatHeader = ({ isSpeaking, onStopSpeaking, onTestAudio, n8nConnected, n8nLoading, onConnectN8n, isMonitoring, onToggleMonitoring, onReconnect, apiConfigured, onOpenApiConfig, workflowConfigured, selectedWorkflow, onOpenWorkflowSelector, isInitialized, onOpenBrowserMonitor, onOpenSimpleBrowserControl, onOpenExerciseManager, onOpenServerStatus, onOpenTriggersWorkflow, onOpenInitialSetup }) => {
+const ChatHeader = ({ isSpeaking, onStopSpeaking, onTestAudio, n8nConnected, n8nLoading, onConnectN8n, isMonitoring, onToggleMonitoring, onReconnect, apiConfigured, onOpenApiConfig, workflowConfigured, selectedWorkflow, onOpenWorkflowSelector, isInitialized, onOpenBrowserMonitor, onOpenSimpleBrowserControl, onOpenExerciseManager, onOpenExerciseSelector, onOpenServerStatus, onOpenTriggersWorkflow, onOpenInitialSetup }) => {
   return (
     <div className="bg-gray-800 border-b border-gray-700 p-4">
       <div className="flex items-center justify-between">
@@ -157,6 +157,16 @@ const ChatHeader = ({ isSpeaking, onStopSpeaking, onTestAudio, n8nConnected, n8n
               className="px-3 py-1.5 rounded-md text-xs bg-purple-600 text-white hover:bg-purple-700 transition-colors"
             >
               📚
+            </button>
+          )}
+
+          {/* Exercise Selector Button */}
+          {isInitialized && (
+            <button 
+              onClick={onOpenExerciseSelector}
+              className="px-3 py-1.5 rounded-md text-xs bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+            >
+              🎯
             </button>
           )}
 

@@ -1,0 +1,122 @@
+{
+  "name": "API Integration Exercise",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "url": "https://jsonplaceholder.typicode.com/users",
+        "options": {}
+      },
+      "id": "http-request",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [240, 300],
+      "webhookId": "api-integration"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Filtrar usuarios por ciudad\nconst users = $input.first().json;\nconst targetCity = 'Gwenborough';\n\nconst filteredUsers = users.filter(user => user.address.city === targetCity);\n\n// Transformar datos para mostrar información relevante\nconst processedUsers = filteredUsers.map(user => ({\n  id: user.id,\n  name: user.name,\n  email: user.email,\n  city: user.address.city,\n  company: user.company.name\n}));\n\nreturn {\n  json: {\n    totalUsers: users.length,\n    filteredCount: filteredUsers.length,\n    targetCity: targetCity,\n    users: processedUsers\n  }\n};"
+      },
+      "id": "data-filter",
+      "name": "Data Filter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "table": "users_summary",
+        "columns": "user_id,name,email,city,company,processed_at",
+        "values": "={{ $json.users.map(u => `${u.id},${u.name},${u.email},${u.city},${u.company},${new Date().toISOString()}`).join(';') }}"
+      },
+      "id": "database-insert",
+      "name": "Database Insert",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"API integrada y datos procesados\",\n  \"summary\": {\n    \"totalUsers\": $json.totalUsers,\n    \"filteredUsers\": $json.filteredCount,\n    \"targetCity\": $json.targetCity\n  }\n}"
+      },
+      "id": "response-node",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [900, 300]
+    }
+  ],
+  "connections": {
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Data Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Filter": {
+      "main": [
+        [
+          {
+            "node": "Database Insert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Database Insert": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "versionId": "1",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "api-integration-workflow",
+  "tags": ["ejercicio", "api", "clase2"],
+  "exercise": {
+    "title": "Integración de APIs - Filtrado y Almacenamiento",
+    "description": "Aprende a consumir APIs externas, filtrar datos y almacenarlos en base de datos",
+    "difficulty": "intermediate",
+    "duration": "25 minutes",
+    "objectives": [
+      "Configurar HTTP Request para consumir API",
+      "Implementar filtrado de datos con JavaScript",
+      "Conectar con base de datos PostgreSQL",
+      "Manejar respuestas y errores"
+    ],
+    "steps": [
+      "Configura el nodo HTTP Request para la API de usuarios",
+      "Agrega un nodo Code para filtrar por ciudad",
+      "Configura la conexión a PostgreSQL",
+      "Implementa el almacenamiento de datos filtrados"
+    ],
+    "testData": {
+      "apiUrl": "https://jsonplaceholder.typicode.com/users",
+      "targetCity": "Gwenborough"
+    },
+    "prerequisites": [
+      "Conocimiento básico de n8n",
+      "Familiaridad con APIs REST",
+      "Conceptos básicos de SQL"
+    ]
+  }
+}

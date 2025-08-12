@@ -76,25 +76,55 @@ Cuando abras la aplicación por primera vez, verás:
 ```bash
 # Iniciar todos los servicios automáticamente
 cd /Users/wavesmanagement/scripts/new/n8n-teacher-app
-./start-all-services.sh
+./start-all-servers.sh
 ```
 
 ### Opción 2: Inicio Manual
 
 ```bash
-# 1. Backend n8n
+# 1. Backend Node.js
 cd /Users/wavesmanagement/scripts/new/n8n-teacher-app/server
 npm start
 
 # 2. Browser Monitor (en nueva terminal)
 cd /Users/wavesmanagement/scripts/new/n8n-teacher-app/browser-monitor
-pip install -r requirements.txt
-python3 browser_monitor.py
+python3 embedded_browser_server.py
 
 # 3. Frontend React (en nueva terminal)
 cd /Users/wavesmanagement/scripts/new/n8n-teacher-app
 npm start
 ```
+
+## 📚 Sistema de Ejercicios
+
+### 🎯 **Estructura de Ejercicios:**
+
+```
+json-files/
+├── clase1/                    # Nivel básico
+│   ├── manualtriger.json     # Trigger manual
+│   └── webhook_trigger.json  # Trigger webhook
+├── clase2/                    # Nivel intermedio
+│   └── api_integration.json  # Integración de APIs
+└── clase3/                    # Nivel avanzado
+    └── complex_workflow.json # Workflow complejo
+```
+
+### 🔄 **Flujo de Aprendizaje:**
+
+1. **Selección**: El alumno elige un ejercicio del catálogo
+2. **Carga**: El sistema carga automáticamente el workflow JSON en n8n
+3. **Práctica**: El alumno interactúa con el workflow en el iframe embebido
+4. **Monitoreo**: El sistema observa las acciones y proporciona ayuda contextual
+5. **Evaluación**: Se evalúa el progreso y se sugiere el siguiente paso
+
+### 🤖 **Contexto para Agentes de IA:**
+
+El sistema incluye un archivo `ai-context.md` que proporciona información completa sobre:
+- Propósito y arquitectura de la aplicación
+- Estructura de datos y endpoints
+- Casos de uso para integración con IA
+- Capacidades del sistema de monitoreo
 
 ## 🎯 Cómo Usar la Super App
 

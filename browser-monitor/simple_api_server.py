@@ -146,9 +146,9 @@ if __name__ == '__main__':
     print("  • GET  /api/browser/logs   - Ver logs")
     print("  • GET  /health             - Health check")
     print("")
-    print("🌐 Servidor corriendo en http://localhost:5000")
+    print("🌐 Servidor corriendo en http://localhost:5001")
     print("💡 Para usar desde frontend:")
-    print("   fetch('http://localhost:5000/api/browser/start', {method: 'POST'})")
+    print("   fetch('http://localhost:5001/api/browser/start', {method: 'POST'})")
     print("")
     
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=5001, debug=False)

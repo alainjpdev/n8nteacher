@@ -10,6 +10,8 @@ import SimpleBrowserControl from './SimpleBrowserControl';
 import ExerciseManager from './ExerciseManager';
 import TriggersWorkflow from './TriggersWorkflow';
 import ServerStatus from './ServerStatus';
+import ExerciseSelector from './ExerciseSelector';
+import ExerciseGuide from './ExerciseGuide';
 // import N8nLogs from './N8nLogs';
 import n8nMonitorService from '../services/n8nMonitorService';
 
@@ -54,6 +56,9 @@ const ChatBox = () => {
   
   // Exercise Manager states
   const [showExerciseManager, setShowExerciseManager] = useState(false);
+  const [showExerciseSelector, setShowExerciseSelector] = useState(false);
+  const [showExerciseGuide, setShowExerciseGuide] = useState(false);
+  const [currentExercise, setCurrentExercise] = useState(null);
   
   // Server Status states
   const [showServerStatus, setShowServerStatus] = useState(false);
@@ -77,7 +82,7 @@ const ChatBox = () => {
     {
       id: 2,
       title: "Ejercicio 2: Trigger Manual - El más simple",
-      content: "Crea un nuevo workflow y agrega un trigger manual. Este es el trigger más básico que permite ejecutar el workflow manualmente desde la interfaz de n8n.",
+      content: "Presiona el botón '+' al centro de n8n y selecciona 'Manual Trigger' del menú desplegable. Este es el trigger más básico que permite ejecutar el workflow manualmente desde la interfaz de n8n.",
       duration: 8000,
       type: 'triggers',
       action: 'manual_trigger',
@@ -526,6 +531,24 @@ const ChatBox = () => {
     }
   }, []);
 
+  // Handle exercise selection
+  const handleExerciseSelected = useCallback((exercise) => {
+    console.log('🎯 Ejercicio seleccionado:', exercise);
+    setCurrentExercise(exercise);
+    setShowExerciseSelector(false);
+    setShowExerciseGuide(true);
+  }, []);
+
+  // Handle exercise completion
+  const handleExerciseComplete = useCallback(() => {
+    console.log('✅ Ejercicio completado:', currentExercise?.title);
+    setShowExerciseGuide(false);
+    setCurrentExercise(null);
+    
+    // Mostrar mensaje de éxito en consola
+    console.log(`¡Excelente! Has completado el ejercicio "${currentExercise?.title}". ¿Te gustaría continuar con otro ejercicio?`);
+  }, [currentExercise]);
+
   // Handle exercise actions
   const handleExerciseAction = useCallback(async (exercise) => {
     if (!n8nConnected) {
@@ -765,6 +788,7 @@ const ChatBox = () => {
           onOpenBrowserMonitor={handleOpenBrowserMonitor}
           onOpenSimpleBrowserControl={handleOpenSimpleBrowserControl}
           onOpenExerciseManager={() => setShowExerciseManager(true)}
+          onOpenExerciseSelector={() => setShowExerciseSelector(true)}
           onOpenServerStatus={handleOpenServerStatus}
           onOpenTriggersWorkflow={handleOpenTriggersWorkflow}
         />
@@ -869,7 +893,22 @@ const ChatBox = () => {
         />
       )}
 
-      
+      {showExerciseSelector && (
+        <ExerciseSelector
+          onExerciseSelected={handleExerciseSelected}
+          onClose={() => setShowExerciseSelector(false)}
+        />
+      )}
+
+      {showExerciseGuide && currentExercise && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <ExerciseGuide
+            exercise={currentExercise}
+            onComplete={handleExerciseComplete}
+            onClose={() => setShowExerciseGuide(false)}
+          />
+        </div>
+      )}
     </div>
   );
 };
