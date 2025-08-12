@@ -151,11 +151,11 @@ const EmbeddedBrowser = () => {
               </button>
               
               <button
-                onClick={() => window.open('http://localhost:5678', '_blank')}
+                onClick={() => window.open('http://localhost:5678/workflow/PEiPnfWFWwk17oKy', '_blank')}
                 className="px-4 py-2 rounded-md text-sm font-medium bg-purple-600 hover:bg-purple-700 text-white"
-                title="Abrir n8n en nueva pestaña"
+                title="Abrir workflow en nueva pestaña"
               >
-                🔗 Abrir n8n
+                🔗 Abrir Workflow
               </button>
               
               <button
@@ -195,13 +195,13 @@ const EmbeddedBrowser = () => {
           {browserStatus === 'running' ? (
                           <iframe
                 ref={iframeRef}
-                src="http://localhost:5678"
+                src="http://localhost:5678/workflow/PEiPnfWFWwk17oKy"
                 className="w-full h-full border-0"
                 title="n8n Browser"
                 sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-storage-access-by-user-activation"
                 allow="fullscreen; microphone; camera; geolocation"
                 onLoad={() => {
-                  console.log('🌐 n8n iframe cargado correctamente');
+                  console.log('🌐 n8n iframe cargado correctamente - Workflow directo');
                 }}
                 onError={(e) => {
                   console.error('❌ Error cargando iframe:', e);

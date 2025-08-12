@@ -3,7 +3,7 @@ import axios from 'axios';
 class N8nMCPService {
   constructor() {
     this.baseURL = '/api/v1'; // Use relative URL for proxy
-    this.apiToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjMjc4M2MxZS0xYzM0LTQ2NjUtYTQ4Yy1hYzI3NjAwMmI2OTYiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU0MzQxMzY2LCJleHAiOjE3NTY4NzU2MDB9.nsmSysDs7tv-sYdtDa_Kir3dnTysylUgZ1aVX_EH5_Q';
+    this.apiToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyYjBjZDMxYS0xMjZkLTQwYTMtYTA1Zi03ODFlNzFlYjBiZjIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU1MDI5NzkwLCJleHAiOjE3NTc1NjMyMDB9.4e0E_z8gXtdzcrRVLhIuyzG2f9vGNA1-lzzmThTGJnI';
     this.isAuthenticated = false;
     this.corsError = false;
     this.logCallback = null;

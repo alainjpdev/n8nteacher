@@ -10,42 +10,18 @@ const ExerciseSelector = ({ onExerciseSelected, onClose }) => {
   const exerciseStructure = {
     clase1: [
       {
-        id: 'manualtriger',
-        title: 'Manual Trigger - Primeros Pasos',
-        description: 'Aprende a crear tu primer workflow presionando el botón "+" al centro de n8n y seleccionando Manual Trigger',
+        id: 1,
+        title: "Ejercicio 1: Introducción a los Triggers de n8n",
+        content: "Los triggers son el punto de entrada de cualquier workflow en n8n. Son los que inician la automatización. En este ejercicio aprenderás los tipos básicos de triggers y cómo usarlos.",
+        duration: 12000,
+        type: 'triggers',
+        action: 'introduction_triggers',
         difficulty: 'beginner',
-        duration: '10 minutes',
-        file: 'json-files/clase1/manualtriger.json'
-      },
-      {
-        id: 'webhook_trigger',
-        title: 'Webhook Trigger - Procesamiento de Datos',
-        description: 'Crea un webhook para recibir y procesar datos externos',
-        difficulty: 'beginner',
-        duration: '15 minutes',
-        file: 'json-files/clase1/webhook_trigger.json'
+        videoReference: null,
+        timestamp: new Date().toISOString()
       }
     ],
-    clase2: [
-      {
-        id: 'api_integration',
-        title: 'Integración de APIs - Filtrado y Almacenamiento',
-        description: 'Consume APIs externas y almacena datos en base de datos',
-        difficulty: 'intermediate',
-        duration: '25 minutes',
-        file: 'json-files/clase2/api_integration.json'
-      }
-    ],
-    clase3: [
-      {
-        id: 'complex_workflow',
-        title: 'Workflow Complejo - Sistema de Notificaciones',
-        description: 'Crea un sistema completo con múltiples integraciones',
-        difficulty: 'advanced',
-        duration: '45 minutes',
-        file: 'json-files/clase3/complex_workflow.json'
-      }
-    ]
+
   };
 
   const loadExercises = useCallback(async () => {
@@ -91,10 +67,8 @@ const ExerciseSelector = ({ onExerciseSelected, onClose }) => {
 
   const getLevelInfo = (level) => {
     switch (level) {
-      case 'clase1': return { title: 'Nivel Básico', description: 'Fundamentos de n8n y triggers' };
-      case 'clase2': return { title: 'Nivel Intermedio', description: 'APIs, procesamiento y bases de datos' };
-      case 'clase3': return { title: 'Nivel Avanzado', description: 'Workflows complejos y sistemas integrados' };
-      default: return { title: 'Nivel', description: 'Descripción' };
+      case 'clase1': return { title: 'Clase 1', description: 'Introducción a los Triggers de n8n' };
+      default: return { title: 'Clase', description: 'Descripción' };
     }
   };
 
@@ -183,14 +157,14 @@ const ExerciseSelector = ({ onExerciseSelected, onClose }) => {
                         {exercise.title}
                       </h3>
                       <p className="text-gray-600 dark:text-gray-400 mb-3">
-                        {exercise.description}
+                        {exercise.content || exercise.description}
                       </p>
                       <div className="flex items-center space-x-4">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(exercise.difficulty)}`}>
                           {exercise.difficulty}
                         </span>
                         <span className="text-sm text-gray-500 dark:text-gray-400">
-                          ⏱️ {exercise.duration}
+                          ⏱️ {typeof exercise.duration === 'number' ? `${Math.round(exercise.duration / 1000)}s` : exercise.duration}
                         </span>
                       </div>
                     </div>

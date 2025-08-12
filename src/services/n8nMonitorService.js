@@ -3,7 +3,7 @@ import axios from 'axios';
 class N8nMonitorService {
   constructor() {
     this.baseURL = 'http://localhost:3001/api';
-    this.targetWorkflowId = null; // Se obtendrá del servidor
+    this.targetWorkflowId = 'PEiPnfWFWwk17oKy'; // Workflow ID de "1era clase"
     this.isMonitoring = false;
     this.monitoringInterval = null;
     this.logCallback = null;
@@ -14,14 +14,20 @@ class N8nMonitorService {
     this.lastNodeCount = 0;
     this.lastConnectionCount = 0;
     
-    // Configure axios
+    // Configure axios with API token
     this.api = axios.create({
       baseURL: this.baseURL,
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'X-N8N-API-KEY': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyYjBjZDMxYS0xMjZkLTQwYTMtYTA1Zi03ODFlNzFlYjBiZjIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU1MDI5NzkwLCJleHAiOjE3NTc1NjMyMDB9.4e0E_z8gXtdzcrRVLhIuyzG2f9vGNA1-lzzmThTGJnI'
       },
       timeout: 10000
     });
+    
+    // Log configuration
+    console.log('🔧 n8nMonitorService configurado con:');
+    console.log('   - Workflow ID:', this.targetWorkflowId);
+    console.log('   - API Token: Configurado');
   }
 
   // Set callbacks

@@ -66,174 +66,8 @@ const ChatBox = () => {
   // Triggers modal state
   const [showTriggersWorkflow, setShowTriggersWorkflow] = useState(false);
 
-  // Sistema de ejercicios dinámico - Con ejercicios de triggers de n8n
-  const [dynamicExercises, setDynamicExercises] = useState([
-    {
-      id: 1,
-      title: "Ejercicio 1: Introducción a los Triggers de n8n",
-      content: "Los triggers son el punto de entrada de cualquier workflow en n8n. Son los que inician la automatización. En este ejercicio aprenderás los tipos básicos de triggers y cómo usarlos.",
-      duration: 12000,
-      type: 'triggers',
-      action: 'introduction_triggers',
-      difficulty: 'beginner',
-      videoReference: null,
-      timestamp: new Date().toISOString()
-    },
-    {
-      id: 2,
-      title: "Ejercicio 2: Trigger Manual - El más simple",
-      content: "Presiona el botón '+' al centro de n8n y selecciona 'Manual Trigger' del menú desplegable. Este es el trigger más básico que permite ejecutar el workflow manualmente desde la interfaz de n8n.",
-      duration: 8000,
-      type: 'triggers',
-      action: 'manual_trigger',
-      difficulty: 'beginner',
-      videoReference: null,
-      timestamp: new Date().toISOString()
-    },
-    {
-      id: 3,
-      title: "Ejercicio 3: Trigger Webhook - Para APIs",
-      content: "Configura un trigger webhook que permita que tu workflow reciba datos desde aplicaciones externas. Este es fundamental para integraciones con APIs.",
-      duration: 15000,
-      type: 'triggers',
-      action: 'webhook_trigger',
-      difficulty: 'intermediate',
-      videoReference: null,
-      timestamp: new Date().toISOString()
-    },
-    {
-      id: 4,
-      title: "Ejercicio 4: Trigger Schedule - Automatización temporal",
-      content: "Configura un trigger de programación que ejecute tu workflow automáticamente en intervalos específicos (cada hora, diario, semanal, etc.).",
-      duration: 10000,
-      type: 'triggers',
-      action: 'schedule_trigger',
-      difficulty: 'intermediate',
-      videoReference: null,
-      timestamp: new Date().toISOString()
-    },
-    {
-      id: 5,
-      title: "Ejercicio 5: Trigger Email - Monitoreo de correos",
-      content: "Configura un trigger de email que detecte nuevos correos y procese automáticamente su contenido. Útil para automatizar respuestas a emails.",
-      duration: 12000,
-      type: 'triggers',
-      action: 'email_trigger',
-      difficulty: 'intermediate',
-      videoReference: null,
-      timestamp: new Date().toISOString()
-    },
-    {
-      id: 6,
-      title: "Ejercicio 6: Trigger de Base de Datos - Monitoreo de cambios",
-      content: "Configura un trigger que monitoree cambios en una base de datos y ejecute acciones automáticamente cuando se agreguen, modifiquen o eliminen registros.",
-      duration: 15000,
-      type: 'triggers',
-      action: 'database_trigger',
-      difficulty: 'advanced',
-      videoReference: null,
-      timestamp: new Date().toISOString()
-    },
-    {
-      id: 7,
-      title: "Ejercicio 7: Trigger de Archivos - Monitoreo de carpetas",
-      content: "Configura un trigger que detecte cuando se agregan, modifican o eliminan archivos en una carpeta específica. Útil para procesamiento automático de archivos.",
-      duration: 12000,
-      type: 'triggers',
-      action: 'file_trigger',
-      difficulty: 'advanced',
-      videoReference: null,
-      timestamp: new Date().toISOString()
-    },
-    {
-      id: 8,
-      title: "Ejercicio 8: Proyecto Final - Workflow completo con triggers",
-      content: "Crea un workflow completo que combine múltiples triggers y nodos de procesamiento. Este ejercicio integra todo lo aprendido sobre triggers de n8n.",
-      duration: 20000,
-      type: 'triggers',
-      action: 'final_project',
-      difficulty: 'advanced',
-      videoReference: null,
-      timestamp: new Date().toISOString()
-    }
-  ]);
-  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-  
-  // Función para agregar ejercicios dinámicamente
-  const addExercise = useCallback((exercise) => {
-    setDynamicExercises(prev => [...prev, {
-      id: Date.now(),
-      title: exercise.title,
-      content: exercise.content,
-      duration: exercise.duration || 8000,
-      type: exercise.type || 'general',
-      action: exercise.action || 'custom_action',
-      difficulty: exercise.difficulty || 'beginner',
-      videoReference: exercise.videoReference || null,
-      timestamp: new Date().toISOString()
-    }]);
-  }, []);
-
-  // Función para eliminar ejercicio
-  const removeExercise = useCallback((exerciseId) => {
-    setDynamicExercises(prev => prev.filter(ex => ex.id !== exerciseId));
-  }, []);
-
-  // Función para actualizar ejercicio
-  const updateExercise = useCallback((exerciseId, updates) => {
-    setDynamicExercises(prev => prev.map(ex => 
-      ex.id === exerciseId ? { ...ex, ...updates } : ex
-    ));
-  }, []);
-
-  // Función para generar ejercicio basado en progreso del usuario
-  const generateExerciseFromProgress = useCallback((userProgress) => {
-    const newExercise = {
-      title: `Ejercicio Dinámico ${dynamicExercises.length + 1}`,
-      content: "Este es un ejercicio generado dinámicamente basado en tu progreso",
-      duration: 8000,
-      type: 'dynamic',
-      action: 'dynamic_action',
-      difficulty: userProgress.skillLevel || 'beginner'
-    };
-    
-    addExercise(newExercise);
-  }, [dynamicExercises.length, addExercise]);
-
-  // Función para generar ejercicios desde video
-  const generateFromVideo = useCallback((videoUrl) => {
-    console.log('🎬 Analizando video:', videoUrl);
-    
-    // Aquí puedes integrar con una API para analizar el video
-    // Por ahora, generamos ejercicios de ejemplo basados en la URL
-    const videoId = videoUrl.split('v=')[1] || 'unknown';
-    
-    const videoBasedExercises = [
-      {
-        title: `Ejercicio basado en video: ${videoId}`,
-        content: "Este ejercicio fue generado automáticamente basado en el análisis del video. Revisa el contenido del video y practica los conceptos mostrados.",
-        duration: 10000,
-        type: 'video_based',
-        action: 'video_analysis',
-        difficulty: 'intermediate',
-        videoReference: videoUrl
-      },
-      {
-        title: "Práctica de conceptos del video",
-        content: "Implementa los conceptos aprendidos en el video en tu propio workflow de n8n.",
-        duration: 12000,
-        type: 'practice',
-        action: 'implement_concepts',
-        difficulty: 'advanced',
-        videoReference: videoUrl
-      }
-    ];
-    
-    videoBasedExercises.forEach(exercise => addExercise(exercise));
-  }, [addExercise]);
-
-  // Usar ejercicios dinámicos en lugar de los estáticos
-  const instructions = useMemo(() => dynamicExercises, [dynamicExercises]);
+  // Sistema de ejercicios simplificado - Solo usa ExerciseSelector
+  const instructions = useMemo(() => [], []);
 
   // n8n Log callback - Comentado ya que los logs están ocultos
   // const handleN8nLog = useCallback((logEntry) => {
@@ -261,10 +95,10 @@ const ChatBox = () => {
           setN8nError('Conectando al servidor...');
           break;
         case 'error':
-          setN8nError('Error de conexión con el servidor');
+          // setN8nError('Error de conexión con el servidor'); // OCULTO
           break;
         case 'disconnected':
-          setN8nError('Desconectado del servidor');
+          // setN8nError('Desconectado del servidor'); // OCULTO
           break;
         default:
           // Handle any other status
@@ -273,12 +107,12 @@ const ChatBox = () => {
     }
   }, []);
 
-  // Mostrar setup inicial solo si no está inicializado
+  // Mostrar setup inicial solo si no está inicializado - OCULTO
   useEffect(() => {
     console.log('🔐 Verificando estado de inicialización...');
     if (!isInitialized) {
-      console.log('🔐 Mostrando setup inicial - no inicializado');
-      setShowInitialSetup(true);
+      console.log('🔐 Setup inicial oculto - usando configuración automática');
+      // setShowInitialSetup(true); // OCULTO
     } else {
       console.log('🔐 Ya inicializado - no mostrar setup');
       setShowInitialSetup(false);
@@ -454,10 +288,10 @@ const ChatBox = () => {
         setCurrentWorkflow(workflow);
         console.log('n8n Monitor: Connected successfully');
       } else {
-        setN8nError('No se pudo conectar al workflow');
+        // setN8nError('No se pudo conectar al workflow'); // OCULTO - Error no crítico
       }
     } catch (err) {
-      setN8nError('Failed to initialize n8n Monitor connection');
+      // setN8nError('Failed to initialize n8n Monitor connection'); // OCULTO - Error no crítico
       console.error('n8n Monitor Init Error:', err);
     } finally {
       setN8nLoading(false);
@@ -821,27 +655,27 @@ const ChatBox = () => {
         isSpeaking={isSpeaking} 
       />
       
-      {showInitialSetup && (
+      {/* {showInitialSetup && (
         <InitialSetup
           onSetupComplete={handleInitialSetupComplete}
           onOpenSimpleBrowserControl={handleOpenSimpleBrowserControl}
         />
-      )}
+      )} */}
       
-      {showApiConfig && (
+      {/* {showApiConfig && (
         <ApiConfig
           onApiConfigured={handleApiConfigured}
           onClose={() => setShowApiConfig(false)}
         />
-      )}
+      )} */}
       
-      {showWorkflowSelector && (
+      {/* {showWorkflowSelector && (
         <WorkflowSelector
           onWorkflowSelected={handleWorkflowSelected}
           onClose={() => setShowWorkflowSelector(false)}
           apiConfig={apiConfig}
         />
-      )}
+      )} */}
       
       {showBrowserMonitor && (
         <BrowserMonitor
@@ -869,11 +703,11 @@ const ChatBox = () => {
               </button>
             </div>
             <ExerciseManager
-              exercises={dynamicExercises}
-              onAddExercise={addExercise}
-              onRemoveExercise={removeExercise}
-              onUpdateExercise={updateExercise}
-              onGenerateFromVideo={generateFromVideo}
+              exercises={[]}
+              onAddExercise={() => {}}
+              onRemoveExercise={() => {}}
+              onUpdateExercise={() => {}}
+              onGenerateFromVideo={() => {}}
             />
           </div>
         </div>

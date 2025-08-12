@@ -73,8 +73,8 @@ const ChatContent = ({
             </div>
           )}
 
-          {/* n8n Manual Connection Prompt - Solo mostrar si está inicializado */}
-          {isInitialized && !n8nConnected && !n8nLoading && !n8nError && (
+          {/* n8n Manual Connection Prompt - OCULTO - Solo mostrar si está inicializado */}
+          {/* {isInitialized && !n8nConnected && !n8nLoading && !n8nError && (
             <div className="mb-4 p-4 bg-blue-900 border border-blue-700 rounded-lg">
               <div className="flex items-center space-x-3">
                 <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
@@ -95,10 +95,10 @@ const ChatContent = ({
                 </svg>
               </div>
             </div>
-          )}
+          )} */}
 
-          {/* n8n Error Banner - Solo mostrar si está inicializado */}
-          {isInitialized && n8nError && (
+          {/* n8n Error Banner - OCULTO - Solo mostrar si está inicializado y hay un error crítico */}
+          {/* {isInitialized && n8nError && (
             <div className="mb-4 p-4 bg-red-900 border border-red-700 rounded-lg">
               <div className="flex items-center space-x-3">
                 <div className="w-3 h-3 bg-red-400 rounded-full"></div>
@@ -111,10 +111,10 @@ const ChatContent = ({
                 </svg>
               </div>
             </div>
-          )}
+          )} */}
 
-          {/* CORS Error Banner - Solo mostrar si está inicializado */}
-          {isInitialized && n8nError && n8nError.includes('CORS') && (
+          {/* CORS Error Banner - OCULTO - Solo mostrar si está inicializado */}
+          {/* {isInitialized && n8nError && n8nError.includes('CORS') && (
             <div className="mb-4 p-4 bg-orange-900 border border-orange-700 rounded-lg">
               <div className="flex items-center space-x-3">
                 <div className="w-3 h-3 bg-orange-400 rounded-full"></div>
@@ -135,7 +135,7 @@ const ChatContent = ({
                 </svg>
               </div>
             </div>
-          )}
+          )} */}
 
           {/* Audio Error Message */}
           {audioError && (
@@ -238,15 +238,39 @@ const ChatContent = ({
           
           {/* Current Instruction */}
           <div className="space-y-4 flex-1">
-            <h3 className="text-xl font-semibold text-white">
-              {instructions[currentStep].title}
-            </h3>
-            <p className="text-gray-300 leading-relaxed">
-              {instructions[currentStep].content}
-            </p>
+            {instructions.length > 0 && currentStep < instructions.length ? (
+              <>
+                <h3 className="text-xl font-semibold text-white">
+                  {instructions[currentStep].title}
+                </h3>
+                <p className="text-gray-300 leading-relaxed">
+                  {instructions[currentStep].content}
+                </p>
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <h3 className="text-xl font-semibold text-white mb-4">
+                  🎯 Clase 1: Introducción a los Triggers de n8n
+                </h3>
+                <p className="text-gray-300 leading-relaxed mb-4">
+                  Presiona el botón de <strong>"+"</strong> que se encuentra en el centro de la pantalla.
+                </p>
+                <div className="bg-gray-800/30 border border-gray-600 rounded-lg p-4 max-w-md mx-auto">
+                  <div className="text-center">
+                    <div className="text-4xl mb-2 text-white">+</div>
+                    <p className="text-sm text-gray-200 font-medium">
+                      Busca este botón blanco en el centro de la pantalla
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Es el primer paso para crear cualquier workflow en n8n
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
             
             {/* Compact n8n Action Info */}
-            {instructions[currentStep].action && (
+            {instructions.length > 0 && currentStep < instructions.length && instructions[currentStep].action && (
               <div className="mt-4 p-3 bg-blue-900 border border-blue-700 rounded-md">
                 <div className="flex items-center space-x-2 mb-2">
                   <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -283,14 +307,16 @@ const ChatContent = ({
           </div>
           
           {/* Progress Bar */}
-          <div className="mt-4">
-            <div className="w-full bg-gray-700 rounded-full h-2">
-              <div 
-                className="bg-blue-500 h-2 rounded-full transition-all duration-500"
-                style={{ width: `${((currentStep + 1) / instructions.length) * 100}%` }}
-              />
+          {instructions.length > 0 && (
+            <div className="mt-4">
+              <div className="w-full bg-gray-700 rounded-full h-2">
+                <div 
+                  className="bg-blue-500 h-2 rounded-full transition-all duration-500"
+                  style={{ width: `${((currentStep + 1) / instructions.length) * 100}%` }}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

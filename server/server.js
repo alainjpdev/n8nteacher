@@ -113,15 +113,15 @@ app.use((req, res, next) => {
 
 // n8n Configuration from environment variables
 global.N8N_BASE_URL = process.env.N8N_BASE_URL || 'http://localhost:5678/api/v1';
-global.N8N_API_TOKEN = null; // No token por defecto - se configurará desde el frontend
-global.TARGET_WORKFLOW_ID = null; // No workflow por defecto
+global.N8N_API_TOKEN = process.env.N8N_API_TOKEN || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyYjBjZDMxYS0xMjZkLTQwYTMtYTA1Zi03ODFlNzFlYjBiZjIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU1MDI5NzkwLCJleHAiOjE3NTc1NjMyMDB9.4e0E_z8gXtdzcrRVLhIuyzG2f9vGNA1-lzzmThTGJnI';
+global.TARGET_WORKFLOW_ID = process.env.N8N_WORKFLOW_ID || 'PEiPnfWFWwk17oKy';
 
 // Validate required environment variables (optional for first-time setup)
 console.log('🔧 Configuración inicial:');
 console.log(`   📡 URL: ${global.N8N_BASE_URL}`);
-console.log(`   🔑 Token: No configurado - se configurará desde el frontend`);
-console.log(`   📋 Workflow ID: No configurado - se seleccionará desde el frontend`);
-console.log('💡 La aplicación pedirá el token en el frontend');
+console.log(`   🔑 Token: ${global.N8N_API_TOKEN ? 'Configurado desde .env' : 'No configurado - se configurará desde el frontend'}`);
+console.log(`   📋 Workflow ID: ${global.TARGET_WORKFLOW_ID ? global.TARGET_WORKFLOW_ID : 'No configurado - se seleccionará desde el frontend'}`);
+console.log('💡 La aplicación usará configuración del archivo .env si está disponible');
 
 // Store connected clients
 const clients = new Set();
@@ -1248,14 +1248,34 @@ let browserProcess = null;
 // Endpoint para verificar si hay un navegador activo
 app.get('/api/browser-status', (req, res) => {
   try {
-    const isActive = browserProcess && !browserProcess.killed;
+    // Verificar el estado del servidor Python del browser monitor
+    const axios = require('axios');
     
-    res.json({
-      success: true,
-      isActive: isActive,
-      active: isActive,
-      message: isActive ? 'Navegador activo' : 'No hay navegador activo'
-    });
+    axios.get('http://localhost:5001/api/browser/status')
+      .then(response => {
+        const browserStatus = response.data;
+        const isActive = browserStatus.running || browserStatus.monitoring_active;
+        
+        res.json({
+          success: true,
+          isActive: isActive,
+          active: isActive,
+          message: isActive ? 'Navegador activo' : 'No hay navegador activo',
+          browserStatus: browserStatus
+        });
+      })
+      .catch(error => {
+        console.error('❌ Error comunicándose con el servidor Python:', error.message);
+        // Si no puede comunicarse con Python, usar el estado local
+        const isActive = browserProcess && !browserProcess.killed;
+        
+        res.json({
+          success: true,
+          isActive: isActive,
+          active: isActive,
+          message: isActive ? 'Navegador activo' : 'No hay navegador activo'
+        });
+      });
   } catch (error) {
     console.error('❌ Error verificando estado del navegador:', error);
     res.status(500).json({

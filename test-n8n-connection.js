@@ -2,7 +2,7 @@ const axios = require('axios');
 
 // n8n Configuration (same as server)
 const N8N_BASE_URL = 'http://localhost:5678/api/v1';
-const N8N_API_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZjkxNGRjYy1jZjZkLTQyYTgtYjEwNy00MWVhY2FkMDU2MmIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU0NDE2NjQzLCJleHAiOjE3NTY5NTg0MDB9.3x0inedA6Kqf74uMTHt8teRZoKFRmPS2WzA58y09YbI';
+const N8N_API_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyYjBjZDMxYS0xMjZkLTQwYTMtYTA1Zi03ODFlNzFlYjBiZjIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU1MDI5NzkwLCJleHAiOjE3NTc1NjMyMDB9.4e0E_z8gXtdzcrRVLhIuyzG2f9vGNA1-lzzmThTGJnI';
 
 async function testN8nConnection() {
   console.log('🧪 Testing n8n API Connection...\n');
